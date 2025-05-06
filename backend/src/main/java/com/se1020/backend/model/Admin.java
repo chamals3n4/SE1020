@@ -1,4 +1,6 @@
-class Admin extends User{
+package com.se1020.backend.model;
+
+public class Admin extends User {
     private String accessLevel;
 
     public String getAccessLevel() {
@@ -6,10 +8,6 @@ class Admin extends User{
     }
 
     public void setAccessLevel(String accessLevel) {
-        this.accessLevel = accessLevel;
-    }
-
-    public Admin(String accessLevel) {
         this.accessLevel = accessLevel;
     }
 }
