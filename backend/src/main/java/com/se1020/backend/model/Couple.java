@@ -1,6 +1,10 @@
- class Couple extends User{
-    protected double budget;
-    protected Date weddingDate;
+package com.se1020.backend.model;
+
+import java.util.Date;
+
+public class Couple extends User {
+    private double budget;
+    private Date weddingDate;
 
     public double getBudget() {
         return budget;
@@ -15,11 +19,6 @@
     }
 
     public void setWeddingDate(Date weddingDate) {
-        this.weddingDate = weddingDate;
-    }
-
-    public Couple(double budget, Date weddingDate) {
-        this.budget = budget;
         this.weddingDate = weddingDate;
     }
 }
