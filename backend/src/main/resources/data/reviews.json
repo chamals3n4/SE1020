@@ -1,0 +1,32 @@
+[
+  {
+    "reviewId": "r1",
+    "vendorId": "v1",
+    "coupleId": "c1",
+    "bookingId": "b1",
+    "rating": 5,
+    "comment": "Elegant Decor provided exceptional service. The venue looked absolutely stunning and exceeded our expectations.",
+    "reviewDate": 1754870400000,
+    "isVerified": true
+  },
+  {
+    "reviewId": "r2",
+    "vendorId": "v2",
+    "coupleId": "c2",
+    "bookingId": "b2",
+    "rating": 4,
+    "comment": "The food was delicious and presentation was beautiful. Service was slightly delayed but overall very good.",
+    "reviewDate": 1757980800000,
+    "isVerified": true
+  },
+  {
+    "reviewId": "r3",
+    "vendorId": "v3",
+    "coupleId": "c3",
+    "bookingId": "b3",
+    "rating": 5,
+    "comment": "Perfect Moments Photography captured every special moment of our day. Highly professional and creative team.",
+    "reviewDate": 1751760000000,
+    "isVerified": true
+  }
+]

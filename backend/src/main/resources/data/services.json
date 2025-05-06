@@ -1,0 +1,45 @@
+[
+  {
+    "serviceId": "s1",
+    "name": "Premium Photography Package",
+    "description": "Full-day photography coverage with two photographers",
+    "basePrice": 2500.0,
+    "serviceType": "PHOTOGRAPHY",
+    "packageType": "Premium",
+    "hours": 8
+  },
+  {
+    "serviceId": "s2",
+    "name": "Deluxe Catering Package",
+    "description": "Full-service catering with premium menu options",
+    "basePrice": 3500.0,
+    "serviceType": "CATERING",
+    "menuItems": ["Appetizers", "Main Course", "Dessert", "Beverages"],
+    "guestCount": 100
+  },
+  {
+    "serviceId": "s3",
+    "name": "Elegant Decoration Setup",
+    "description": "Complete venue decoration with elegant theme",
+    "basePrice": 1800.0,
+    "serviceType": "DECORATION"
+  },
+  {
+    "serviceId": "s4",
+    "name": "Wedding DJ Package",
+    "description": "Professional DJ services for your wedding reception",
+    "basePrice": 1200.0,
+    "serviceType": "MUSIC",
+    "hours": 5,
+    "includedEquipment": ["Professional Sound System", "Lighting", "Microphones"]
+  },
+  {
+    "serviceId": "s5",
+    "name": "Beachfront Wedding Venue",
+    "description": "Beautiful beachfront location for your ceremony and reception",
+    "basePrice": 5000.0,
+    "serviceType": "VENUE",
+    "capacity": 150,
+    "amenities": ["Chairs", "Tables", "Tent", "Parking", "Indoor Option"]
+  }
+]
