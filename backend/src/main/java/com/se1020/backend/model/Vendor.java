@@ -1,13 +1,12 @@
 package com.se1020.backend.model;
 
-import java.util.Date;
 import java.util.List;
 
 public class Vendor extends User {
     private VendorType vendorType;
     private String businessName;
     private double rating;
-    private List<Date> availability;
+    private List<String> availability; // For simplicity, use List<String> for dates
 
     public VendorType getVendorType() {
         return vendorType;
@@ -25,14 +24,6 @@ public class Vendor extends User {
         this.businessName = businessName;
     }
 
-    public List<Date> getAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(List<Date> availability) {
-        this.availability = availability;
-    }
-
     public double getRating() {
         return rating;
     }
@@ -40,4 +31,16 @@ public class Vendor extends User {
     public void setRating(double rating) {
         this.rating = rating;
     }
+
+    public List<String> getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(List<String> availability) {
+        this.availability = availability;
+    }
+
+    public void updateAvailability() {}
+    public void respondToBooking() {}
+    public void submitPortfolio() {}
 }

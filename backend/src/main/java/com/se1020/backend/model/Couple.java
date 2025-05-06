@@ -21,4 +21,8 @@ public class Couple extends User {
     public void setWeddingDate(Date weddingDate) {
         this.weddingDate = weddingDate;
     }
+
+    public void planWedding() {}
+    public void requestBooking() {}
+    public void reviewVendor() {}
 }

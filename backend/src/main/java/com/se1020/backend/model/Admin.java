@@ -10,4 +10,8 @@ public class Admin extends User {
     public void setAccessLevel(String accessLevel) {
         this.accessLevel = accessLevel;
     }
+
+    public void manageUsers() {}
+    public void approveVendor() {}
+    public void resolveDisputes() {}
 }
