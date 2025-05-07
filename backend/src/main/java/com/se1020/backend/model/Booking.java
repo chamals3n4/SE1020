@@ -1,5 +1,6 @@
 package com.se1020.backend.model;
 
+import com.se1020.backend.enums.BookingStatus;
 import java.util.Date;
 
 public class Booking {
