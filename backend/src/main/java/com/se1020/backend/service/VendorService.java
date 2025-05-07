@@ -2,9 +2,9 @@ package com.se1020.backend.service;
 
 import com.se1020.backend.model.Service;
 import com.se1020.backend.model.Vendor;
-import com.se1020.backend.model.VendorSearchCriteria;
 import com.se1020.backend.repository.ServiceRepository;
 import com.se1020.backend.repository.VendorRepository;
+import com.se1020.backend.util.VendorSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;

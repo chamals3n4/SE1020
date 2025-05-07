@@ -1,5 +1,6 @@
 package com.se1020.backend.model;
 
+import com.se1020.backend.enums.WeddingStyle;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
