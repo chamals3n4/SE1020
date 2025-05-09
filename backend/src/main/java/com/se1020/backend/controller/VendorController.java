@@ -1,5 +1,6 @@
 package com.se1020.backend.controller;
 
+import com.se1020.backend.dto.VendorProfileRequest;
 import com.se1020.backend.enums.SocialMediaPlatform;
 import com.se1020.backend.enums.VendorType;
 import com.se1020.backend.model.PortfolioItem;
@@ -20,10 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Controller for managing vendor-related operations with support for consolidated API requests
- * that allow creating and updating vendors with complete profiles in a single request.
+ * Controller for managing vendor-related operations with support for
+ * consolidated API requests
+ * that allow creating and updating vendors with complete profiles in a single
+ * request.
  */
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/vendor")
 public class VendorController {
@@ -48,6 +52,7 @@ public class VendorController {
 
     /**
      * Legacy method for creating a basic vendor
+     * 
      * @deprecated Use {@link #createVendorProfile(VendorProfileRequest)} instead
      */
     @Deprecated
@@ -56,17 +61,18 @@ public class VendorController {
         vendorService.createVendor(vendor);
         return ResponseEntity.status(HttpStatus.CREATED).body(vendor);
     }
-    
+
     /**
      * Create a vendor with complete profile details in a single request
-     * Supports vendor details, location information, social media links, and service packages
+     * Supports vendor details, location information, social media links, and
+     * service packages
      */
     @PostMapping("/profile")
     public ResponseEntity<Vendor> createVendorProfile(@RequestBody VendorProfileRequest request) throws IOException {
         // Create the base vendor
         Vendor vendor = request.getVendor();
         vendorService.createVendor(vendor);
-        
+
         // Add location if provided
         if (request.getLocation() != null) {
             vendor.setAddress(request.getLocation().getAddress());
@@ -75,24 +81,24 @@ public class VendorController {
             vendor.setZipCode(request.getLocation().getZipCode());
             vendor.setServiceRadius(request.getLocation().getServiceRadius());
         }
-        
+
         // Add social media links if provided
         if (request.getSocialMediaLinks() != null) {
             for (Map.Entry<SocialMediaPlatform, String> entry : request.getSocialMediaLinks().entrySet()) {
                 vendor.addSocialMediaLink(entry.getKey(), entry.getValue());
             }
         }
-        
+
         // Add service packages if provided
         if (request.getServicePackages() != null && !request.getServicePackages().isEmpty()) {
             for (ServicePackage servicePackage : request.getServicePackages()) {
                 vendor.addServicePackage(servicePackage);
             }
         }
-        
+
         // Update the vendor with all the new information
         vendorService.updateVendor(vendor);
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(vendor);
     }
 
@@ -158,7 +164,7 @@ public class VendorController {
             @RequestParam(required = false) Double maxPrice) throws IOException {
         return vendorService.getVendorsByPriceRange(minPrice, maxPrice);
     }
-    
+
     /**
      * Portfolio Management Endpoints
      */
@@ -171,7 +177,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PostMapping("/{id}/portfolio")
     public ResponseEntity<PortfolioItem> addPortfolioItem(
             @PathVariable String id,
@@ -185,7 +191,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @DeleteMapping("/{vendorId}/portfolio/{itemId}")
     public ResponseEntity<Void> removePortfolioItem(
             @PathVariable String vendorId,
@@ -199,7 +205,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Service Package Endpoints
      */
@@ -212,7 +218,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PostMapping("/{id}/packages")
     public ResponseEntity<ServicePackage> addServicePackage(
             @PathVariable String id,
@@ -226,7 +232,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @DeleteMapping("/{vendorId}/packages/{packageId}")
     public ResponseEntity<Void> removeServicePackage(
             @PathVariable String vendorId,
@@ -240,7 +246,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Location Management Endpoints
      */
@@ -249,18 +255,17 @@ public class VendorController {
         Vendor vendor = vendorService.getVendorById(id);
         if (vendor != null) {
             Map<String, Object> locationInfo = Map.of(
-                "address", vendor.getAddress(),
-                "city", vendor.getCity(),
-                "state", vendor.getState(),
-                "zipCode", vendor.getZipCode(),
-                "serviceRadius", vendor.getServiceRadius()
-            );
+                    "address", vendor.getAddress(),
+                    "city", vendor.getCity(),
+                    "state", vendor.getState(),
+                    "zipCode", vendor.getZipCode(),
+                    "serviceRadius", vendor.getServiceRadius());
             return ResponseEntity.ok(locationInfo);
         } else {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PutMapping("/{id}/location")
     public ResponseEntity<Void> updateVendorLocation(
             @PathVariable String id,
@@ -284,12 +289,13 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     /**
      * Social Media Endpoints
      */
     @GetMapping("/{id}/social-media")
-    public ResponseEntity<Map<SocialMediaPlatform, String>> getVendorSocialMedia(@PathVariable String id) throws IOException {
+    public ResponseEntity<Map<SocialMediaPlatform, String>> getVendorSocialMedia(@PathVariable String id)
+            throws IOException {
         Vendor vendor = vendorService.getVendorById(id);
         if (vendor != null) {
             return ResponseEntity.ok(vendor.getSocialMediaLinks());
@@ -297,7 +303,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @PostMapping("/{id}/social-media")
     public ResponseEntity<Void> addSocialMediaLink(
             @PathVariable String id,
@@ -312,7 +318,7 @@ public class VendorController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @DeleteMapping("/{id}/social-media/{platform}")
     public ResponseEntity<Void> removeSocialMediaLink(
             @PathVariable String id,

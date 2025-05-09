@@ -12,10 +12,19 @@ public class Booking {
     private BookingStatus status;
     private double totalCost;
     
+    // Payment information
+    private PaymentStatus paymentStatus;
+    private double amountPaid;
+    private double remainingBalance;
+    private Date lastPaymentDate;
+    private String paymentMethod;
+    private String transactionId;
+
     public Booking() {
     }
     
-    public Booking(String bookingId, String coupleId, String vendorId, String serviceId, Date date, BookingStatus status, double totalCost) {
+    public Booking(String bookingId, String coupleId, String vendorId, String serviceId, 
+                  Date date, BookingStatus status, double totalCost) {
         this.bookingId = bookingId;
         this.coupleId = coupleId;
         this.vendorId = vendorId;
@@ -23,6 +32,9 @@ public class Booking {
         this.date = date;
         this.status = status;
         this.totalCost = totalCost;
+        this.paymentStatus = PaymentStatus.PENDING;
+        this.amountPaid = 0.0;
+        this.remainingBalance = totalCost;
     }
     
     public String getBookingId() {
@@ -55,6 +67,7 @@ public class Booking {
     
     public void setTotalCost(double totalCost) {
         this.totalCost = totalCost;
+        this.remainingBalance = totalCost - this.amountPaid;
     }
     
     public String getCoupleId() {
@@ -80,7 +93,58 @@ public class Booking {
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }
-    
+
+    // New payment-related getters and setters
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
+        this.remainingBalance = this.totalCost - amountPaid;
+        if (this.remainingBalance <= 0) {
+            this.paymentStatus = PaymentStatus.PAID;
+        } else if (amountPaid > 0) {
+            this.paymentStatus = PaymentStatus.PARTIALLY_PAID;
+        }
+    }
+
+    public double getRemainingBalance() {
+        return remainingBalance;
+    }
+
+    public Date getLastPaymentDate() {
+        return lastPaymentDate;
+    }
+
+    public void setLastPaymentDate(Date lastPaymentDate) {
+        this.lastPaymentDate = lastPaymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
     // Methods from UML
     public void confirmBooking() {
         this.status = BookingStatus.CONFIRMED;

@@ -21,7 +21,7 @@ public class Review {
         this.vendorId = vendorId;
         this.coupleId = coupleId;
         this.bookingId = bookingId;
-        this.rating = rating;
+        setRating(rating);  // Use setter to validate rating
         this.comment = comment;
         this.reviewDate = reviewDate;
         this.isVerified = isVerified;
@@ -64,6 +64,9 @@ public class Review {
     }
     
     public void setRating(int rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
         this.rating = rating;
     }
     

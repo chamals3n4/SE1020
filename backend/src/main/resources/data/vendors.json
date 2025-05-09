@@ -1,1 +1,22 @@
-[{"id":"V001","email":"bookings@royalgrand.com","password":"vendorpass1","name":"Royal Grand Hotel","phone":"+94112345678","vendorType":"VENUE","businessName":"Royal Grand Hotel & Convention Center","rating":4.7,"availability":["2025-10-15","2025-10-16","2025-10-17"],"portfolioItems":[],"servicePackages":[],"address":null,"city":null,"state":null,"zipCode":null,"serviceRadius":0.0,"socialMediaLinks":{}},{"id":"V002","email":"info@momentsforever.com","password":"vendorpass2","name":"Moments Forever Photography","phone":"+94771234569","vendorType":"PHOTOGRAPHY","businessName":"Moments Forever Photography","rating":4.8,"availability":["2025-10-10","2025-10-15","2025-10-20"],"portfolioItems":[],"servicePackages":[],"address":null,"city":null,"state":null,"zipCode":null,"serviceRadius":0.0,"socialMediaLinks":{}}]
+[
+    {
+        "id": "vendor-1746787689991",
+        "email": "info@hexa7labs.co",
+        "password": "0000",
+        "name": "Hexa7 Labs",
+        "phone": "0717110160",
+        "role": "VENDOR",
+        "vendorType": "PHOTOGRAPHY",
+        "businessName": null,
+        "rating": 0.0,
+        "availability": null,
+        "portfolioItems": [],
+        "servicePackages": [],
+        "address": "Colombo, Srilanka",
+        "city": null,
+        "state": null,
+        "zipCode": null,
+        "serviceRadius": 0.0,
+        "socialMediaLinks": {}
+    }
+]

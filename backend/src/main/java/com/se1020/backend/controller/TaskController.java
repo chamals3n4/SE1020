@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/task")
 public class TaskController {
@@ -55,7 +56,7 @@ public class TaskController {
         taskService.deleteTask(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PutMapping("/{id}/complete")
     public ResponseEntity<Void> markTaskCompleted(@PathVariable String id) throws IOException {
         taskService.markTaskCompleted(id);
