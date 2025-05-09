@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/booking")
 public class BookingController {
@@ -39,7 +40,8 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Booking> updateBooking(@PathVariable String id, @RequestBody Booking booking) throws IOException {
+    public ResponseEntity<Booking> updateBooking(@PathVariable String id, @RequestBody Booking booking)
+            throws IOException {
         booking.setBookingId(id);
         bookingService.updateBooking(booking);
         return ResponseEntity.ok(booking);
@@ -50,13 +52,13 @@ public class BookingController {
         bookingService.deleteBooking(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     @PutMapping("/{id}/confirm")
     public ResponseEntity<Void> confirmBooking(@PathVariable String id) throws IOException {
         bookingService.confirmBooking(id);
         return ResponseEntity.ok().build();
     }
-    
+
     @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelBooking(@PathVariable String id) throws IOException {
         bookingService.cancelBooking(id);
