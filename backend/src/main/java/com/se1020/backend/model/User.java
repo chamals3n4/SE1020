@@ -1,5 +1,9 @@
 package com.se1020.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.se1020.backend.enums.UserRole;
+
 public class User {
     private String id;
     private String email;
@@ -7,6 +11,10 @@ public class User {
     private String name;
     private String phone;
     private UserRole role;
+    
+    public User() {
+        // Default constructor for Jackson
+    }
 
     public String getId() {
         return id;

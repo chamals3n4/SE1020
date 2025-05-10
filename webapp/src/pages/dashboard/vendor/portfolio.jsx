@@ -32,16 +32,24 @@ function VendorPortfolio() {
         setVendorName(currentUser.name || "Vendor");
         console.log("Loaded vendor ID from localStorage:", currentUser.id);
       } else {
-        // Fallback for testing
-        setVendorId("vendor-123");
-        setVendorName("Test Vendor");
-        console.warn("No vendor found in localStorage, using test data");
+        console.error("No vendor found in localStorage");
+        toast({
+          title: "Error",
+          description: "Unable to identify vendor. Please log in again.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error("Error parsing vendor data from localStorage:", error);
-      // Fallback for testing
-      setVendorId("vendor-123");
-      setVendorName("Test Vendor");
+      toast({
+        title: "Error",
+        description: "Unable to load vendor information. Please log in again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   }, []);
 

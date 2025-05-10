@@ -1,4 +1,4 @@
-package com.se1020.backend.model;
+package com.se1020.backend.enums;
 
 public enum PaymentStatus {
     PENDING,
@@ -6,4 +6,4 @@ public enum PaymentStatus {
     PAID,
     REFUNDED,
     CANCELLED
-} 
+}

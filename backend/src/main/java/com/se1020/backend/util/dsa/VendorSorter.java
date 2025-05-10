@@ -1,5 +1,9 @@
-package com.se1020.backend.util;
+package com.se1020.backend.util.dsa;
 
+/**
+ * Sorting implementation for vendors using merge sort algorithm.
+ * Implements merge sort for a linked list of vendors based on rating.
+ */
 public class VendorSorter {
     
     public VendorNode mergeSort(VendorNode head) {

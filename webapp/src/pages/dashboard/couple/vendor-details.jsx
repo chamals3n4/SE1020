@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+
 import {
   Star,
   MapPin,
@@ -43,9 +45,9 @@ function VendorDetails() {
     format(new Date(), "yyyy-MM-dd")
   );
   const [bookingTime, setBookingTime] = useState("10:00");
-  
+
   // Get current user from localStorage
-  const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+  const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
 
   useEffect(() => {
     const fetchVendorDetails = async () => {
@@ -53,87 +55,41 @@ function VendorDetails() {
         // Fetch vendor details
         const response = await vendorService.getVendorById(vendorId);
         setVendor(response.data);
-        
+
         // Fetch vendor's service packages
         try {
-          const packagesResponse = await vendorService.getVendorPackages(vendorId);
+          const packagesResponse = await vendorService.getVendorPackages(
+            vendorId
+          );
           setPackages(packagesResponse.data || []);
         } catch (packagesError) {
           console.error("Error fetching vendor packages:", packagesError);
-          // Set mock packages as fallback
-          setPackages([
-            {
-              id: "pkg-1",
-              name: "Basic Package",
-              description: "Essential services for your special day",
-              price: 999,
-              items: ["4 hours coverage", "Digital delivery", "Basic editing"]
-            },
-            {
-              id: "pkg-2",
-              name: "Premium Package",
-              description: "Comprehensive coverage for your wedding",
-              price: 1999,
-              items: ["8 hours coverage", "Digital + Print delivery", "Advanced editing", "Second shooter"]
-            },
-            {
-              id: "pkg-3",
-              name: "Deluxe Package",
-              description: "All-inclusive wedding services",
-              price: 2999,
-              items: ["Full-day coverage", "Premium album", "Video highlights", "Engagement session"]
-            }
-          ]);
+          setPackages([]);
         }
-        
+
         // Fetch vendor reviews
         try {
-          const reviewsResponse = await reviewService.getReviewsByVendorId(vendorId);
+          const reviewsResponse = await reviewService.getReviewsByVendorId(
+            vendorId
+          );
           setReviews(reviewsResponse.data || []);
         } catch (reviewsError) {
           console.error("Error fetching vendor reviews:", reviewsError);
-          // Set mock reviews as fallback
-          setReviews([
-            {
-              id: "r1",
-              vendorId: vendorId,
-              coupleId: "couple-1",
-              rating: 5,
-              comment: "Absolutely wonderful! They made our day so special.",
-              date: "2024-12-15T14:30:00Z",
-              reviewerName: "Emily & David"
-            },
-            {
-              id: "r2",
-              vendorId: vendorId,
-              coupleId: "couple-2",
-              rating: 4,
-              comment: "Great service, highly recommended!",
-              date: "2024-11-22T10:15:00Z",
-              reviewerName: "Jennifer & Michael"
-            }
-          ]);
+          setReviews([]);
         }
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching vendor details:", error);
-        // Create mock vendor data if API fails
-        setVendor({
-          id: vendorId,
-          name: "Wedding Service Provider",
-          type: "PHOTOGRAPHY",
-          description: "Professional wedding services with a personal touch",
-          phone: "(123) 456-7890",
-          email: "contact@example.com",
-          website: "www.example.com",
-          address: "123 Wedding Blvd, City, State",
-          city: "New York",
-          state: "NY",
-          featuredImage: null,
-          avgRating: 4.8
-        });
+        setVendor(null);
         setIsLoading(false);
+        toast("Error", {
+          description:
+            "Unable to fetch vendor details. Please try again later.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     };
 
@@ -153,41 +109,52 @@ function VendorDetails() {
       date: bookingDate,
       time: bookingTime,
       status: "pending",
-      notes: `Booking for ${selectedPackage ? selectedPackage.name : 'services'} at ${bookingTime} on ${bookingDate}`
+      notes: `Booking for ${
+        selectedPackage ? selectedPackage.name : "services"
+      } at ${bookingTime} on ${bookingDate}`,
     };
-    
+
     try {
       // Save to backend API - simplify the call to match backend expectations
       try {
         // Make a direct call to the bookingService
         const backendResponse = await bookingService.createBooking(newBooking);
-        console.log("Booking created successfully via backend API:", backendResponse.data || newBooking);
+        console.log(
+          "Booking created successfully via backend API:",
+          backendResponse.data || newBooking
+        );
       } catch (apiError) {
         console.error("API booking creation failed:", apiError);
-        alert('Failed to create booking. Please make sure the backend server is running.');
+        alert(
+          "Failed to create booking. Please make sure the backend server is running."
+        );
         return; // Stop execution if API call fails
       }
-      
+
       // Show success message
-      alert('Booking request sent successfully! Check your bookings page for status.');
-      
+      alert(
+        "Booking request sent successfully! Check your bookings page for status."
+      );
+
       // Navigate to bookings page
-      navigate('/dashboard/couple/bookings');
+      navigate("/dashboard/couple/bookings");
     } catch (error) {
       console.error("Error creating booking:", error);
-      alert('There was an error creating your booking. Please try again.');
+      alert("There was an error creating your booking. Please try again.");
     }
   };
 
   const handleReviewSubmitted = (newReview) => {
     // Add the new review to the reviews list
     setReviews([newReview, ...reviews]);
-    
+
     // Update vendor average rating
     if (vendor) {
-      const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0) + newReview.rating;
+      const totalRatings =
+        reviews.reduce((sum, review) => sum + review.rating, 0) +
+        newReview.rating;
       const newAvgRating = totalRatings / (reviews.length + 1);
-      setVendor({...vendor, avgRating: newAvgRating});
+      setVendor({ ...vendor, avgRating: newAvgRating });
     }
   };
 
@@ -241,13 +208,13 @@ function VendorDetails() {
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Vendors
         </Button>
-        
+
         <div className="flex items-center gap-2">
-          <VendorReview 
-            vendorId={vendor.id} 
-            onReviewSubmitted={handleReviewSubmitted} 
+          <VendorReview
+            vendorId={vendor.id}
+            onReviewSubmitted={handleReviewSubmitted}
           />
-          
+
           <Button variant="outline" size="sm">
             <Heart className="h-4 w-4 mr-2" />
             Save
@@ -270,10 +237,7 @@ function VendorDetails() {
                   <ImageIcon className="h-16 w-16 text-muted-foreground" />
                 </div>
               )}
-              <Badge 
-                className="absolute top-3 right-3"
-                variant="secondary"
-              >
+              <Badge className="absolute top-3 right-3" variant="secondary">
                 {vendor.type ? vendor.type.replace("_", " ") : "Vendor"}
               </Badge>
             </div>
@@ -281,7 +245,9 @@ function VendorDetails() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle className="text-2xl">{vendor.name}</CardTitle>
-                  <CardDescription className="mt-1">{vendor.description}</CardDescription>
+                  <CardDescription className="mt-1">
+                    {vendor.description}
+                  </CardDescription>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center">
@@ -306,7 +272,9 @@ function VendorDetails() {
                 </div>
                 <div className="flex items-center">
                   <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <span className="text-sm">{vendor.phone || "Not provided"}</span>
+                  <span className="text-sm">
+                    {vendor.phone || "Not provided"}
+                  </span>
                 </div>
                 {vendor.email && (
                   <div className="flex items-center">
@@ -317,7 +285,12 @@ function VendorDetails() {
                 {vendor.website && (
                   <div className="flex items-center">
                     <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <a href={`https://${vendor.website}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
+                    <a
+                      href={`https://${vendor.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary hover:underline"
+                    >
                       {vendor.website}
                     </a>
                   </div>
@@ -332,15 +305,22 @@ function VendorDetails() {
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
               <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="packages" className="space-y-4 pt-4">
               <h3 className="text-lg font-medium">Available Packages</h3>
               {packages.length === 0 ? (
-                <p className="text-muted-foreground">No packages available. Contact the vendor for custom quotes.</p>
+                <p className="text-muted-foreground">
+                  No packages available. Contact the vendor for custom quotes.
+                </p>
               ) : (
                 <div className="space-y-4">
                   {packages.map((pkg) => (
-                    <Card key={pkg.id} className={`overflow-hidden transition-colors ${selectedPackage?.id === pkg.id ? 'border-primary' : ''}`}>
+                    <Card
+                      key={pkg.id}
+                      className={`overflow-hidden transition-colors ${
+                        selectedPackage?.id === pkg.id ? "border-primary" : ""
+                      }`}
+                    >
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-center">
                           <CardTitle>{pkg.name}</CardTitle>
@@ -361,12 +341,18 @@ function VendorDetails() {
                         </ul>
                       </CardContent>
                       <CardFooter>
-                        <Button 
-                          variant={selectedPackage?.id === pkg.id ? "default" : "outline"} 
+                        <Button
+                          variant={
+                            selectedPackage?.id === pkg.id
+                              ? "default"
+                              : "outline"
+                          }
                           className="w-full"
                           onClick={() => handlePackageSelect(pkg)}
                         >
-                          {selectedPackage?.id === pkg.id ? "Selected" : "Select Package"}
+                          {selectedPackage?.id === pkg.id
+                            ? "Selected"
+                            : "Select Package"}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -374,25 +360,29 @@ function VendorDetails() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="reviews" className="space-y-4 pt-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Customer Reviews</h3>
-                <VendorReview 
+                <VendorReview
                   vendorId={vendor.id}
                   onReviewSubmitted={handleReviewSubmitted}
                 />
               </div>
-              
+
               {reviews.length === 0 ? (
-                <p className="text-muted-foreground">No reviews yet. Be the first to review this vendor!</p>
+                <p className="text-muted-foreground">
+                  No reviews yet. Be the first to review this vendor!
+                </p>
               ) : (
                 <div className="space-y-4">
                   {reviews.map((review) => (
                     <Card key={review.id}>
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-center">
-                          <CardTitle className="text-base">{review.reviewerName}</CardTitle>
+                          <CardTitle className="text-base">
+                            {review.reviewerName}
+                          </CardTitle>
                           <span className="text-sm text-muted-foreground">
                             {new Date(review.date).toLocaleDateString()}
                           </span>
@@ -409,12 +399,14 @@ function VendorDetails() {
                 </div>
               )}
             </TabsContent>
-            
+
             <TabsContent value="portfolio" className="pt-4">
               <div className="text-center py-6">
                 <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
                 <h3 className="mt-2 text-lg font-medium">Portfolio</h3>
-                <p className="text-muted-foreground">This vendor hasn't uploaded any portfolio items yet.</p>
+                <p className="text-muted-foreground">
+                  This vendor hasn't uploaded any portfolio items yet.
+                </p>
               </div>
             </TabsContent>
           </Tabs>
@@ -424,7 +416,9 @@ function VendorDetails() {
           <Card>
             <CardHeader>
               <CardTitle>Book This Vendor</CardTitle>
-              <CardDescription>Select a package and time to request a booking</CardDescription>
+              <CardDescription>
+                Select a package and time to request a booking
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -440,7 +434,7 @@ function VendorDetails() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="booking-time">Booking Time</Label>
                 <div className="flex items-center">
@@ -453,7 +447,7 @@ function VendorDetails() {
                   />
                 </div>
               </div>
-              
+
               <div className="pt-2">
                 <Card className="bg-muted">
                   <CardHeader className="pb-2">
@@ -467,11 +461,17 @@ function VendorDetails() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Service:</span>
-                        <span>{selectedPackage ? selectedPackage.name : "No package selected"}</span>
+                        <span>
+                          {selectedPackage
+                            ? selectedPackage.name
+                            : "No package selected"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Date:</span>
-                        <span>{format(new Date(bookingDate), "MMMM d, yyyy")}</span>
+                        <span>
+                          {format(new Date(bookingDate), "MMMM d, yyyy")}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Time:</span>
@@ -482,9 +482,12 @@ function VendorDetails() {
                   <CardFooter className="pt-4">
                     <div className="flex justify-between items-center w-full">
                       <div className="text-lg font-medium">
-                        ${selectedPackage ? selectedPackage.price.toLocaleString() : "0"}
+                        $
+                        {selectedPackage
+                          ? selectedPackage.price.toLocaleString()
+                          : "0"}
                       </div>
-                      <Button 
+                      <Button
                         onClick={createBooking}
                         disabled={!selectedPackage}
                       >

@@ -27,6 +27,12 @@ import CoupleWedding from "./pages/dashboard/couple/wedding";
 import CoupleTasks from "./pages/dashboard/couple/tasks";
 import VendorDetails from "./pages/dashboard/couple/vendor-details";
 
+// Admin Dashboard Pages
+import AdminOverview from "./pages/dashboard/admin/overview";
+import AdminUsers from "./pages/dashboard/admin/users";
+import AdminVendors from "./pages/dashboard/admin/vendors";
+import AdminDisputes from "./pages/dashboard/admin/disputes";
+
 function App() {
   return (
     <AuthProvider>
@@ -69,6 +75,18 @@ function App() {
             <Route path="bookings" element={<CoupleBookings />} />
             <Route path="wedding" element={<CoupleWedding />} />
             <Route path="tasks" element={<CoupleTasks />} />
+          </Route>
+
+          {/* Admin Dashboard Routes */}
+          <Route
+            path="/dashboard/admin"
+            element={<DashboardLayout userType="admin" />}
+          >
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<AdminOverview />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="vendors" element={<AdminVendors />} />
+            <Route path="disputes" element={<AdminDisputes />} />
           </Route>
 
           {/* Redirect root to login page */}

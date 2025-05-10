@@ -5,9 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Represents a portfolio item for vendors to showcase their previous work
- */
 public class PortfolioItem {
     private String id;
     private String title;
@@ -16,12 +13,12 @@ public class PortfolioItem {
     private List<String> imageUrls;
     private String eventType;
     private String clientTestimonial;
-    
+
     public PortfolioItem() {
         this.id = UUID.randomUUID().toString();
         this.imageUrls = new ArrayList<>();
     }
-    
+
     public PortfolioItem(String title, String description, Date eventDate) {
         this();
         this.title = title;
@@ -68,7 +65,7 @@ public class PortfolioItem {
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
     }
-    
+
     public void addImageUrl(String imageUrl) {
         if (this.imageUrls == null) {
             this.imageUrls = new ArrayList<>();

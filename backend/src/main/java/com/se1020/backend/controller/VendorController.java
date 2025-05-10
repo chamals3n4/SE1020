@@ -7,7 +7,7 @@ import com.se1020.backend.model.PortfolioItem;
 import com.se1020.backend.model.ServicePackage;
 import com.se1020.backend.model.Vendor;
 import com.se1020.backend.service.VendorService;
-import com.se1020.backend.util.VendorSearchCriteria;
+import com.se1020.backend.util.dsa.VendorSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

@@ -1,5 +1,11 @@
-package com.se1020.backend.model;
+package com.se1020.backend.util.dsa;
 
+import com.se1020.backend.model.Vendor;
+
+/**
+ * Node class for the Vendor linked list implementation.
+ * Used in the DSA implementation for vendor management.
+ */
 public class VendorNode {
     private Vendor vendor;
     private VendorNode next;

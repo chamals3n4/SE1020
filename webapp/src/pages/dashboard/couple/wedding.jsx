@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,6 @@ import { Badge } from "@/components/ui/badge";
 import { weddingService, coupleService } from "@/services/api";
 
 function WeddingPlanning() {
-  // Initialize with empty values that will be filled from localStorage or API
   const [weddingDetails, setWeddingDetails] = useState({
     id: "",
     weddingName: "",
@@ -232,29 +232,20 @@ function WeddingPlanning() {
           }
         } catch (apiError) {
           console.error(
-            "API fetch failed, creating default wedding details",
+            "Error fetching wedding details or creating a new wedding:",
             apiError
           );
-
-          // Use basic information from localStorage as fallback
-          const fallbackWeddingDetails = {
-            weddingName: localUser.name
-              ? `${localUser.name.split(" ")[0]}'s Wedding`
-              : "Our Wedding",
-            date: localUser.weddingDate || "",
-            budget: parseFloat(localUser.budget) || 0,
-            style: localUser.style || "",
-            id: `w-${userCoupleId}`,
-            location: "",
-            address: "",
-            notes: "",
-            theme: "",
-            time: "12:00",
-            guestCount: randomGuestCount,
-          };
-
-          setWeddingDetails(fallbackWeddingDetails);
-          setEditFormData({ ...fallbackWeddingDetails });
+          // Show error toast
+          toast("Error", {
+            description:
+              "Unable to fetch wedding details. Please try again later.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+          // Set empty wedding details instead of using mock data
+          setWeddingDetails(null);
+          setEditFormData({});
         }
 
         setIsLoading(false);

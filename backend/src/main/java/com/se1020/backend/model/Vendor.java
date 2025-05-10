@@ -2,6 +2,7 @@ package com.se1020.backend.model;
 
 import com.se1020.backend.enums.SocialMediaPlatform;
 import com.se1020.backend.enums.VendorType;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,14 @@ public class Vendor extends User {
     private String businessName;
     private double rating;
     private List<String> availability; // For simplicity, use List<String> for dates
+    
+    // Admin approval management
+    private boolean isApproved = false;
+    private boolean isRejected = false;
+    private String rejectionReason;
+    private LocalDateTime approvalDate;
+    private LocalDateTime rejectionDate;
+    private String category; // Simple category string for admin dashboard
     
     // Portfolio management
     private List<PortfolioItem> portfolioItems = new ArrayList<>();
@@ -59,6 +68,55 @@ public class Vendor extends User {
 
     public void setAvailability(List<String> availability) {
         this.availability = availability;
+    }
+    
+    // Admin approval methods
+    public boolean isApproved() {
+        return isApproved;
+    }
+    
+    public void setApproved(boolean approved) {
+        isApproved = approved;
+    }
+    
+    public boolean isRejected() {
+        return isRejected;
+    }
+    
+    public void setRejected(boolean rejected) {
+        isRejected = rejected;
+    }
+    
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+    
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
+    }
+    
+    public LocalDateTime getApprovalDate() {
+        return approvalDate;
+    }
+    
+    public void setApprovalDate(LocalDateTime approvalDate) {
+        this.approvalDate = approvalDate;
+    }
+    
+    public LocalDateTime getRejectionDate() {
+        return rejectionDate;
+    }
+    
+    public void setRejectionDate(LocalDateTime rejectionDate) {
+        this.rejectionDate = rejectionDate;
+    }
+    
+    public String getCategory() {
+        return category;
+    }
+    
+    public void setCategory(String category) {
+        this.category = category;
     }
     
     // Portfolio management methods

@@ -39,13 +39,28 @@ const coupleNavItems = [
   { icon: Settings, label: "Settings", path: "/dashboard/couple/settings" },
 ];
 
+const adminNavItems = [
+  { icon: Home, label: "Dashboard", path: "/dashboard/admin/overview" },
+  { icon: Users, label: "Users", path: "/dashboard/admin/users" },
+  { icon: ShoppingBag, label: "Vendors", path: "/dashboard/admin/vendors" },
+  { icon: MessageSquare, label: "Disputes", path: "/dashboard/admin/disputes" },
+  { icon: Settings, label: "Settings", path: "/dashboard/admin/settings" },
+];
+
 function DashboardLayout({ userType }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, currentUser } = useAuth();
 
-  const navItems = userType === "vendor" ? vendorNavItems : coupleNavItems;
+  let navItems;
+  if (userType === "vendor") {
+    navItems = vendorNavItems;
+  } else if (userType === "admin") {
+    navItems = adminNavItems;
+  } else {
+    navItems = coupleNavItems;
+  }
   const dashboardTitle = "Till Card Declines";
 
   const handleLogout = () => {

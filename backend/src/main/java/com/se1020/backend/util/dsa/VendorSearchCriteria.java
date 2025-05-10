@@ -1,9 +1,13 @@
-package com.se1020.backend.util;
+package com.se1020.backend.util.dsa;
 
 import com.se1020.backend.enums.VendorType;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Criteria class for searching vendors with specific attributes.
+ * Used to filter vendors based on various search parameters.
+ */
 public class VendorSearchCriteria {
     private VendorType vendorType;
     private String location;

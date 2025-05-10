@@ -173,6 +173,18 @@ export const reviewService = {
   deleteReview: (id) => api.delete(`/review/${id}`),
 };
 
+// Admin services
+export const adminService = {
+  login: async (email, password) => {
+    return api.post("/admin/login", { email, password });
+  },
+  getAllUsers: () => api.get("/admin/users"),
+  getAllVendors: () => api.get("/admin/vendors"),
+  getStats: () => api.get("/admin/stats"),
+  approveVendor: (vendorId) => api.put(`/admin/vendor/${vendorId}/approve`),
+  rejectVendor: (vendorId, reason) => api.put(`/admin/vendor/${vendorId}/reject`, { reason })
+};
+
 export default {
   vendorService,
   coupleService,
@@ -180,4 +192,5 @@ export default {
   bookingService,
   taskService,
   reviewService,
+  adminService
 };
