@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Wedding class that combines the functionality of Wedding entity and WeddingProfileRequest.
+ * Contains wedding details and provides methods for managing tasks and handling profile requests.
+ */
 public class Wedding {
     private String weddingId;
     private String coupleId;  // Reference to the couple who owns this wedding
@@ -13,6 +17,9 @@ public class Wedding {
     private WeddingStyle style;
     private double budget;
     private List<Task> tasks = new ArrayList<>();  // Composition relationship
+    
+    // Flag to determine if this is used as a request object or an entity
+    private transient boolean isRequestObject = false;
     
     public Wedding() {
     }
@@ -102,5 +109,61 @@ public class Wedding {
     
     public void generateTimeline() {
         // Implementation to generate a timeline for the wedding
+    }
+    
+    /**
+     * Mark this Wedding object as a request object.
+     * This is useful when using the same class for both entity and request purposes.
+     * 
+     * @return this Wedding object for method chaining
+     */
+    public Wedding asRequestObject() {
+        this.isRequestObject = true;
+        return this;
+    }
+    
+    /**
+     * Check if this Wedding object is being used as a request object.
+     * 
+     * @return true if this is a request object, false otherwise
+     */
+    public boolean isRequestObject() {
+        return isRequestObject;
+    }
+    
+    /**
+     * Replace all tasks with a new list of tasks.
+     * This is particularly useful when updating a wedding profile with a completely new set of tasks.
+     * 
+     * @param tasks the new list of tasks to set
+     */
+    public void replaceTasks(List<Task> tasks) {
+        this.tasks.clear();
+        if (tasks != null) {
+            this.tasks.addAll(tasks);
+        }
+    }
+    
+    /**
+     * Create a Wedding entity from this request object.
+     * If this is not a request object (isRequestObject is false), it returns itself.
+     * 
+     * @return a Wedding entity populated with data from this request
+     */
+    public Wedding toEntity() {
+        if (!isRequestObject) {
+            return this;
+        }
+        
+        Wedding entity = new Wedding();
+        entity.setWeddingId(this.weddingId);
+        entity.setCoupleId(this.coupleId);
+        entity.setDate(this.date);
+        entity.setLocation(this.location);
+        entity.setStyle(this.style);
+        entity.setBudget(this.budget);
+        entity.replaceTasks(this.tasks);
+        
+        return entity;
     }
 }

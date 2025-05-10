@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+
 import {
   Search,
   Star,
@@ -124,10 +126,12 @@ function FindVendors() {
 
             if (testError) {
               console.error("Error accessing bucket:", testError);
-              setFetchError(`Bucket access error: ${testError.message}. Check your Supabase RLS policies.`);
+              setFetchError(
+                `Bucket access error: ${testError.message}. Check your Supabase RLS policies.`
+              );
               return;
             }
-            
+
             console.log("Bucket access successful. Root contents:", testData);
           } catch (err) {
             console.error("Error testing bucket:", err);
@@ -159,37 +163,42 @@ function FindVendors() {
 
                 // Get public URLs for all files directly without checking accessibility
                 // This ensures we at least try to display the images even if they might not load
-                const imageUrls = data.map(file => {
+                const imageUrls = data.map((file) => {
                   const { data: publicUrlData } = supabase.storage
                     .from("images")
                     .getPublicUrl(`vendors/${vendor.id}/${file.name}`);
-                  
+
                   const url = publicUrlData.publicUrl;
                   console.log(`Generated URL for ${file.name}:`, url);
                   return url;
                 });
-                
-                console.log(`Added ${imageUrls.length} images for vendor ${vendor.id}:`, imageUrls);
+
+                console.log(
+                  `Added ${imageUrls.length} images for vendor ${vendor.id}:`,
+                  imageUrls
+                );
 
                 if (imageUrls.length > 0) {
-                  console.log(`Updating vendor ${vendor.id} with ${imageUrls.length} images`);
-                  
+                  console.log(
+                    `Updating vendor ${vendor.id} with ${imageUrls.length} images`
+                  );
+
                   // Force a direct update to the vendor object
                   vendor.portfolioImages = imageUrls;
-                  
+
                   // Make a complete new copy of the array
-                  const updatedVendors = processedVendors.map(v => {
+                  const updatedVendors = processedVendors.map((v) => {
                     if (v.id === vendor.id) {
                       return {
                         ...v,
-                        portfolioImages: imageUrls
+                        portfolioImages: imageUrls,
                       };
                     }
                     return v;
                   });
-                  
+
                   // Update both state variables
-                  console.log('Setting new vendors state with updated images');
+                  console.log("Setting new vendors state with updated images");
                   setVendors(updatedVendors);
                   const filtered = getFilteredVendors(updatedVendors, filters);
                   setFilteredVendors(filtered);
@@ -220,88 +229,14 @@ function FindVendors() {
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching vendors:", error);
-        // Fallback to mock data if API fails
-        const mockVendors = [
-          {
-            id: "v1",
-            name: "Elegant Events Photography",
-            type: "PHOTOGRAPHY",
-            description:
-              "Professional photography services for weddings and events",
-            avgRating: 4.8,
-            reviewCount: 24,
-            minPrice: 999,
-            maxPrice: 2999,
-            city: "San Francisco",
-            state: "CA",
-            serviceRadius: 50,
-            portfolioItems: [
-              {
-                id: "item-1",
-                title: "Beach Wedding",
-                imageUrls: [
-                  "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1562690868-60bbe7293e94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1516901632977-d566cbe28dac?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                ],
-              },
-            ],
-            portfolioImages: [], // This will be populated by the mapping in processedVendors
-          },
-          {
-            id: "v2",
-            name: "Floral Fantasy",
-            type: "FLORIST",
-            description: "Beautiful floral arrangements for any wedding theme",
-            avgRating: 4.6,
-            reviewCount: 18,
-            minPrice: 500,
-            maxPrice: 1500,
-            city: "Los Angeles",
-            state: "CA",
-            serviceRadius: 30,
-            portfolioItems: [
-              {
-                id: "item-2",
-                title: "Garden Wedding",
-                imageUrls: [
-                  "https://images.unsplash.com/photo-1562690868-60bbe7293e94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1516901632977-d566cbe28dac?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                ],
-              },
-            ],
-            portfolioImages: [], // This will be populated by the mapping in processedVendors
-          },
-          {
-            id: "v3",
-            name: "Divine Catering",
-            type: "CATERING",
-            description: "Exquisite cuisine for your special day",
-            avgRating: 4.9,
-            reviewCount: 32,
-            minPrice: 2500,
-            maxPrice: 8000,
-            city: "Seattle",
-            state: "WA",
-            serviceRadius: 25,
-            portfolioItems: [
-              {
-                id: "item-3",
-                title: "Hotel Ballroom Wedding",
-                imageUrls: [
-                  "https://images.unsplash.com/photo-1516901632977-d566cbe28dac?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                  "https://images.unsplash.com/photo-1562690868-60bbe7293e94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                ],
-              },
-            ],
-            portfolioImages: [], // This will be populated by the mapping in processedVendors
-          },
-        ];
-
-        setVendors(mockVendors);
-        setFilteredVendors(mockVendors);
+        setVendors([]);
+        setFilteredVendors([]);
+        toast("Error", {
+          description: "Unable to fetch vendors. Please try again later.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         setIsLoading(false);
       }
     };
@@ -557,26 +492,28 @@ function FindVendors() {
         <p className="text-muted-foreground">
           Discover the perfect vendors for your special day
         </p>
-        
+
         {/* Error Message */}
         {fetchError && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4 my-4">
             <div className="flex">
               <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
               <div>
-                <h3 className="text-sm font-medium text-red-800">Error Loading Images</h3>
+                <h3 className="text-sm font-medium text-red-800">
+                  Error Loading Images
+                </h3>
                 <p className="text-sm text-red-700">{fetchError}</p>
                 <p className="text-sm text-red-700 mt-2">
                   <strong>Possible fixes:</strong> Ensure your Supabase RLS
-                  policies are correctly set up. Your bucket should have a policy
-                  allowing public read access.
+                  policies are correctly set up. Your bucket should have a
+                  policy allowing public read access.
                 </p>
               </div>
             </div>
           </div>
         )}
       </div>
-      
+
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -657,15 +594,24 @@ function FindVendors() {
                 >
                   {/* Display carousel of vendor images */}
                   <div className="relative aspect-video bg-muted">
-                    {console.log(`Rendering vendor card for ${vendor.id}:`, vendor)}
-                    {console.log(`Portfolio images for ${vendor.id}:`, vendor.portfolioImages)}
+                    {console.log(
+                      `Rendering vendor card for ${vendor.id}:`,
+                      vendor
+                    )}
+                    {console.log(
+                      `Portfolio images for ${vendor.id}:`,
+                      vendor.portfolioImages
+                    )}
 
                     {vendor.portfolioImages &&
                     vendor.portfolioImages.length > 0 ? (
                       <Carousel className="w-full">
                         <CarouselContent>
                           {vendor.portfolioImages.map((imageUrl, index) => {
-                            console.log(`Rendering image ${index} for vendor ${vendor.id}:`, imageUrl);
+                            console.log(
+                              `Rendering image ${index} for vendor ${vendor.id}:`,
+                              imageUrl
+                            );
                             return (
                               <CarouselItem key={index}>
                                 <img

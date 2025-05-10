@@ -39,7 +39,8 @@ public class ServiceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Service> updateService(@PathVariable String id, @RequestBody Service service) throws IOException {
+    public ResponseEntity<Service> updateService(@PathVariable String id, @RequestBody Service service)
+            throws IOException {
         service.setServiceId(id);
         serviceManagementService.updateService(service);
         return ResponseEntity.ok(service);

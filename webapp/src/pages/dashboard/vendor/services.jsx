@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
 import {
   Card,
   CardContent,
@@ -31,23 +33,15 @@ function VendorServices() {
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching packages:", error);
-        // If API fails, use some fallback mock data to demonstrate UI
-        setPackages([
-          {
-            id: "pkg-1",
-            name: "Basic Package",
-            description: "Essential coverage for small weddings",
-            price: 999.99,
-            features: ["6 hours of coverage", "Digital delivery", "1 photographer"]
-          },
-          {
-            id: "pkg-2",
-            name: "Premium Package",
-            description: "Complete coverage for your special day",
-            price: 1999.99,
-            features: ["10 hours of coverage", "Digital + Print delivery", "2 photographers", "Video highlights"]
-          }
-        ]);
+        setPackages([]);
+        // Show error notification
+        toast("Error", {
+          description:
+            "Unable to fetch service packages. Please try again later.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
         setIsLoading(false);
       }
     };
@@ -61,11 +55,14 @@ function VendorServices() {
       name: "New Package",
       description: "Description of the new package",
       price: 1499.99,
-      features: ["Feature 1", "Feature 2", "Feature 3"]
+      features: ["Feature 1", "Feature 2", "Feature 3"],
     };
-    
+
     try {
-      const response = await vendorService.addServicePackage(vendorId, newPackage);
+      const response = await vendorService.addServicePackage(
+        vendorId,
+        newPackage
+      );
       setPackages([...packages, response.data]);
     } catch (error) {
       console.error("Error adding package:", error);
@@ -74,35 +71,37 @@ function VendorServices() {
 
   const handleEditPackage = async (packageId) => {
     // In a real app, implement editing form
-    const packageToEdit = packages.find(pkg => pkg.id === packageId);
+    const packageToEdit = packages.find((pkg) => pkg.id === packageId);
     if (!packageToEdit) return;
-    
+
     // This would normally open a modal with the package data for editing
     // For now, we'll just simulate an update
     const updatedPackage = {
       ...packageToEdit,
-      name: packageToEdit.name + " (Updated)"
+      name: packageToEdit.name + " (Updated)",
     };
-    
+
     try {
       // In this API, editing a package is done by updating the vendor
       // First get the current vendor
       const vendorResponse = await vendorService.getVendorById(vendorId);
       const vendor = vendorResponse.data;
-      
+
       // Update the package in the vendor's package list
       const updatedVendor = {
         ...vendor,
-        servicePackages: vendor.servicePackages.map(pkg => 
+        servicePackages: vendor.servicePackages.map((pkg) =>
           pkg.id === packageId ? updatedPackage : pkg
-        )
+        ),
       };
-      
+
       // Update the vendor
       await vendorService.updateVendor(vendorId, updatedVendor);
-      
+
       // Update local state
-      setPackages(packages.map(pkg => pkg.id === packageId ? updatedPackage : pkg));
+      setPackages(
+        packages.map((pkg) => (pkg.id === packageId ? updatedPackage : pkg))
+      );
     } catch (error) {
       console.error("Error updating package:", error);
     }
@@ -111,10 +110,10 @@ function VendorServices() {
   const handleDeletePackage = async (packageId) => {
     // In a real app, implement confirmation dialog
     if (!confirm("Are you sure you want to delete this package?")) return;
-    
+
     try {
       await vendorService.removeServicePackage(vendorId, packageId);
-      setPackages(packages.filter(pkg => pkg.id !== packageId));
+      setPackages(packages.filter((pkg) => pkg.id !== packageId));
     } catch (error) {
       console.error("Error deleting package:", error);
     }
@@ -127,7 +126,9 @@ function VendorServices() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Services & Packages</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Services & Packages
+        </h1>
         <Button onClick={handleAddPackage}>
           <Plus className="h-4 w-4 mr-2" />
           Add Package
@@ -141,15 +142,15 @@ function VendorServices() {
               <div className="flex justify-between items-start">
                 <CardTitle>{pkg.name}</CardTitle>
                 <div className="flex space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => handleEditPackage(pkg.id)}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => handleDeletePackage(pkg.id)}
                   >

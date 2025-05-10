@@ -1,9 +1,9 @@
 package com.se1020.backend.service;
 
 import com.se1020.backend.model.Vendor;
-import com.se1020.backend.model.VendorLinkedList;
-import com.se1020.backend.model.VendorNode;
-import com.se1020.backend.model.VendorSorter;
+import com.se1020.backend.util.dsa.VendorLinkedList;
+import com.se1020.backend.util.dsa.VendorNode;
+import com.se1020.backend.util.dsa.VendorSorter;
 import com.se1020.backend.repository.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

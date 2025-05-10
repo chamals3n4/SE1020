@@ -2,7 +2,6 @@ package com.se1020.backend.controller;
 
 import com.se1020.backend.model.Task;
 import com.se1020.backend.model.Wedding;
-import com.se1020.backend.model.WeddingProfileRequest;
 import com.se1020.backend.service.TaskService;
 import com.se1020.backend.service.WeddingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,8 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Controller for managing wedding-related operations with support for consolidated API requests
+ * Controller for managing wedding-related operations with support for
+ * consolidated API requests
  * that allow creating and updating weddings with tasks in a single request.
  */
 
@@ -24,7 +24,7 @@ public class WeddingController {
 
     @Autowired
     private WeddingService weddingService;
-    
+
     @Autowired
     private TaskService taskService;
 
@@ -45,7 +45,8 @@ public class WeddingController {
 
     /**
      * Legacy method for creating a basic wedding
-     * @deprecated Use {@link #createWeddingProfile(WeddingProfileRequest)} instead
+     * 
+     * @deprecated Use {@link #createWeddingProfile(Wedding)} instead
      */
     @Deprecated
     @PostMapping
@@ -53,36 +54,43 @@ public class WeddingController {
         weddingService.createWedding(wedding);
         return ResponseEntity.status(HttpStatus.CREATED).body(wedding);
     }
-    
+
     /**
      * Create a wedding with tasks in a single request
-     * This consolidated API allows creating a wedding and its associated tasks in one call
+     * This consolidated API allows creating a wedding and its associated tasks in
+     * one call
      */
     @PostMapping("/profile")
-    public ResponseEntity<Wedding> createWeddingProfile(@RequestBody WeddingProfileRequest request) throws IOException {
-        // Create the wedding first
-        Wedding wedding = request.getWedding();
-        weddingService.createWedding(wedding);
-        
-        // Create and associate tasks if provided
-        if (request.getTasks() != null && !request.getTasks().isEmpty()) {
-            for (Task task : request.getTasks()) {
-                // Set the wedding ID for each task
-                task.setWeddingId(wedding.getWeddingId());
-                
-                // Add the task to the wedding
-                wedding.addTask(task);
+    public ResponseEntity<Wedding> createWeddingProfile(@RequestBody Wedding wedding) throws IOException {
+        // Mark this wedding as a request object
+        wedding.asRequestObject();
+
+        // Create a new entity from the request
+        Wedding entity = wedding.toEntity();
+
+        // Create the wedding in the system
+        weddingService.createWedding(entity);
+
+        // All tasks are already part of the wedding entity from the toEntity()
+        // conversion
+        // Update any task wedding IDs if needed
+        for (Task task : entity.getTasks()) {
+            if (task.getWeddingId() == null || task.getWeddingId().isEmpty()) {
+                task.setWeddingId(entity.getWeddingId());
             }
-            
-            // Update the wedding with the tasks
-            weddingService.updateWedding(wedding);
         }
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(wedding);
+
+        // Update the wedding with the tasks
+        if (!entity.getTasks().isEmpty()) {
+            weddingService.updateWedding(entity);
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(entity);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Wedding> updateWedding(@PathVariable String id, @RequestBody Wedding wedding) throws IOException {
+    public ResponseEntity<Wedding> updateWedding(@PathVariable String id, @RequestBody Wedding wedding)
+            throws IOException {
         wedding.setWeddingId(id);
         weddingService.updateWedding(wedding);
         return ResponseEntity.ok(wedding);

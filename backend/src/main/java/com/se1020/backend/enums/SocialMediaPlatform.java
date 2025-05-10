@@ -1,8 +1,5 @@
 package com.se1020.backend.enums;
 
-/**
- * Enum representing different social media platforms for vendor profiles
- */
 public enum SocialMediaPlatform {
     FACEBOOK("Facebook"),
     INSTAGRAM("Instagram"),
@@ -12,13 +9,13 @@ public enum SocialMediaPlatform {
     YOUTUBE("YouTube"),
     TIKTOK("TikTok"),
     WEBSITE("Website");
-    
+
     private final String displayName;
-    
+
     SocialMediaPlatform(String displayName) {
         this.displayName = displayName;
     }
-    
+
     public String getDisplayName() {
         return displayName;
     }
