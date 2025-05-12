@@ -1,21 +1,14 @@
 [
-    {
-        "id": "couple-1746787562014",
-        "email": "chamals004@gmail.com",
-        "password": "0000",
-        "name": "Chamal Senarathna",
-        "phone": "0717110160",
-        "role": "COUPLE",
-        "budget": 5000.0,
-        "weddingDate": 1751500800000,
-        "partnerId": "partner-1746787562014",
-        "partner": {
-            "id": "partner-1746787562014",
-            "email": "navodadevangi@gmail.com",
-            "password": "0000",
-            "name": "Navoda Devangi",
-            "phone": "0712193355",
-            "role": "COUPLE"
-        }
-    }
+  {
+    "id": "couple-1747080385692",
+    "email": "chamals004@gmail.com",
+    "password": "0000",
+    "name": "Chamal Senarathna",
+    "phone": "0717110160",
+    "role": "COUPLE",
+    "budget": 5000.0,
+    "weddingDate": 1748563200000,
+    "partnerId": null,
+    "partner": null
+  }
 ]

@@ -77,21 +77,23 @@ function VendorBookings() {
     try {
       // Try multiple localStorage keys for backward compatibility
       let userStr = localStorage.getItem("user");
-      
+
       // If not found with "user" key, check "currentUser" as fallback
       if (!userStr) {
         const currentUserStr = localStorage.getItem("currentUser");
         if (currentUserStr) {
           userStr = currentUserStr;
-          console.log("Vendor found in 'currentUser' localStorage key instead of 'user'");
+          console.log(
+            "Vendor found in 'currentUser' localStorage key instead of 'user'"
+          );
         }
       }
-      
+
       if (!userStr) return null;
 
       const user = JSON.parse(userStr);
       console.log("Found user data:", { id: user.id, role: user.role });
-      
+
       // For testing/development - accept any user with role VENDOR or any logged-in user
       if (user && user.id) {
         // For testing purposes, treat the user as a vendor if they have vendor ID in the JSON
@@ -104,7 +106,7 @@ function VendorBookings() {
           console.log("Treating user as a vendor for testing purposes");
           return {
             ...user,
-            role: "VENDOR"
+            role: "VENDOR",
           };
         }
       }
@@ -124,14 +126,14 @@ function VendorBookings() {
   }, [vendorId]); // Re-fetch when vendor ID changes
 
   const handleConfirmBooking = async (bookingId) => {
-    if (!bookingId || bookingId === 'undefined') {
-      alert('Invalid booking ID. Cannot confirm.');
+    if (!bookingId || bookingId === "undefined") {
+      alert("Invalid booking ID. Cannot confirm.");
       return;
     }
     try {
       console.log(`Confirming booking ${bookingId}`);
       setIsLoading(true);
-      
+
       // Make sure we use the proper ID format
       const targetId = bookingId?.toString().trim();
       console.log(`Using target ID: ${targetId} for confirm`);
@@ -141,82 +143,99 @@ function VendorBookings() {
       let currentBookingData;
       try {
         // First try to get fresh data from the API
-        const freshData = await axios.get(`http://localhost:8080/api/booking/${targetId}`);
+        const freshData = await axios.get(
+          `http://localhost:8080/api/booking/${targetId}`
+        );
         if (freshData.data) {
           console.log("Got fresh booking data from API:", freshData.data);
           currentBookingData = freshData.data;
         } else {
-          throw new Error('API returned empty data');
+          throw new Error("API returned empty data");
         }
       } catch (fetchError) {
         console.warn("Could not fetch fresh booking data:", fetchError);
         // Fall back to our local data if API fetch fails
-        const localBooking = bookings.find(b => 
-          b.id === targetId || 
-          b.bookingId === targetId || 
-          b.id?.toString() === targetId ||
-          b.bookingId?.toString() === targetId
+        const localBooking = bookings.find(
+          (b) =>
+            b.id === targetId ||
+            b.bookingId === targetId ||
+            b.id?.toString() === targetId ||
+            b.bookingId?.toString() === targetId
         );
-        
+
         if (!localBooking) {
-          throw new Error(`Booking ${targetId} not found in current state or API`);
+          throw new Error(
+            `Booking ${targetId} not found in current state or API`
+          );
         }
         currentBookingData = localBooking;
       }
-      
+
       // Prepare update data with ALL fields from the current booking
       const updateData = {
         ...currentBookingData,
         id: targetId,
         bookingId: targetId,
-        status: "CONFIRMED",         // The only field we're actually changing
-        lastUpdated: new Date().toISOString()
+        status: "CONFIRMED", // The only field we're actually changing
+        lastUpdated: new Date().toISOString(),
       };
-      
+
       // Double-check that critical fields are present
       if (!updateData.coupleId) {
         console.error("Missing coupleId in booking data");
         alert("Cannot confirm booking: Missing couple information");
         return;
       }
-      
+
       if (!updateData.vendorId) {
         console.error("Missing vendorId in booking data");
         alert("Cannot confirm booking: Missing vendor information");
         return;
       }
-      
-      console.log("Sending booking confirmation to API with VERIFIED data:", updateData);
+
+      console.log(
+        "Sending booking confirmation to API with VERIFIED data:",
+        updateData
+      );
 
       // Make a direct axios call to update the exact record
       try {
         // Direct PUT to the booking endpoint with full data
-        const response = await axios.put(`http://localhost:8080/api/booking/${targetId}`, updateData);
+        const response = await axios.put(
+          `http://localhost:8080/api/booking/${targetId}`,
+          updateData
+        );
         console.log("Successfully confirmed booking:", response.data);
       } catch (error) {
         console.error("Confirm via direct PUT failed:", error);
         throw error;
       }
-      
+
       // Optimistically update UI while we fetch fresh data
       const updatedBookings = bookings.map((b) =>
-        (b.id === bookingId || b.bookingId === bookingId) ? { ...b, status: "CONFIRMED" } : b
+        b.id === bookingId || b.bookingId === bookingId
+          ? { ...b, status: "CONFIRMED" }
+          : b
       );
-      
+
       setBookings(updatedBookings);
-      
+
       // Show success message
       toast("Booking confirmed", {
         description: "The booking has been confirmed successfully.",
         variant: "default",
       });
-      
+
       // Close the dialog if it's open
-      if (isViewDialogOpen && selectedBooking && 
-          (selectedBooking.id === bookingId || selectedBooking.bookingId === bookingId)) {
+      if (
+        isViewDialogOpen &&
+        selectedBooking &&
+        (selectedBooking.id === bookingId ||
+          selectedBooking.bookingId === bookingId)
+      ) {
         setIsViewDialogOpen(false);
       }
-      
+
       // Refresh the booking list to get the updated data
       await fetchBookings();
     } catch (error) {
@@ -235,7 +254,7 @@ function VendorBookings() {
     try {
       console.log(`Cancelling booking ${bookingId}`);
       setIsLoading(true);
-      
+
       // Make sure we use the proper ID format
       const targetId = bookingId?.toString().trim();
       console.log(`Using target ID: ${targetId} for cancel`);
@@ -245,82 +264,99 @@ function VendorBookings() {
       let currentBookingData;
       try {
         // First try to get fresh data from the API
-        const freshData = await axios.get(`http://localhost:8080/api/booking/${targetId}`);
+        const freshData = await axios.get(
+          `http://localhost:8080/api/booking/${targetId}`
+        );
         if (freshData.data) {
           console.log("Got fresh booking data from API:", freshData.data);
           currentBookingData = freshData.data;
         } else {
-          throw new Error('API returned empty data');
+          throw new Error("API returned empty data");
         }
       } catch (fetchError) {
         console.warn("Could not fetch fresh booking data:", fetchError);
         // Fall back to our local data if API fetch fails
-        const localBooking = bookings.find(b => 
-          b.id === targetId || 
-          b.bookingId === targetId || 
-          b.id?.toString() === targetId ||
-          b.bookingId?.toString() === targetId
+        const localBooking = bookings.find(
+          (b) =>
+            b.id === targetId ||
+            b.bookingId === targetId ||
+            b.id?.toString() === targetId ||
+            b.bookingId?.toString() === targetId
         );
-        
+
         if (!localBooking) {
-          throw new Error(`Booking ${targetId} not found in current state or API`);
+          throw new Error(
+            `Booking ${targetId} not found in current state or API`
+          );
         }
         currentBookingData = localBooking;
       }
-      
+
       // Prepare update data with ALL fields from the current booking
       const updateData = {
         ...currentBookingData,
         id: targetId,
         bookingId: targetId,
-        status: "CANCELLED",         // The only field we're actually changing
-        lastUpdated: new Date().toISOString()
+        status: "CANCELLED", // The only field we're actually changing
+        lastUpdated: new Date().toISOString(),
       };
-      
+
       // Double-check that critical fields are present
       if (!updateData.coupleId) {
         console.error("Missing coupleId in booking data");
         alert("Cannot cancel booking: Missing couple information");
         return;
       }
-      
+
       if (!updateData.vendorId) {
         console.error("Missing vendorId in booking data");
         alert("Cannot cancel booking: Missing vendor information");
         return;
       }
-      
-      console.log("Sending booking cancellation to API with VERIFIED data:", updateData);
+
+      console.log(
+        "Sending booking cancellation to API with VERIFIED data:",
+        updateData
+      );
 
       // Make a direct axios call to update the exact record
       try {
         // Direct PUT to the booking endpoint with full data
-        const response = await axios.put(`http://localhost:8080/api/booking/${targetId}`, updateData);
+        const response = await axios.put(
+          `http://localhost:8080/api/booking/${targetId}`,
+          updateData
+        );
         console.log("Successfully cancelled booking:", response.data);
       } catch (error) {
         console.error("Cancel via direct PUT failed:", error);
         throw error;
       }
-      
+
       // Optimistically update UI while we fetch fresh data
       const updatedBookings = bookings.map((b) =>
-        (b.id === bookingId || b.bookingId === bookingId) ? { ...b, status: "CANCELLED" } : b
+        b.id === bookingId || b.bookingId === bookingId
+          ? { ...b, status: "CANCELLED" }
+          : b
       );
-      
+
       setBookings(updatedBookings);
-      
+
       // Show success message
       toast("Booking cancelled", {
         description: "The booking has been cancelled.",
         variant: "default",
       });
-      
+
       // Close the dialog if it's open
-      if (isViewDialogOpen && selectedBooking && 
-          (selectedBooking.id === bookingId || selectedBooking.bookingId === bookingId)) {
+      if (
+        isViewDialogOpen &&
+        selectedBooking &&
+        (selectedBooking.id === bookingId ||
+          selectedBooking.bookingId === bookingId)
+      ) {
         setIsViewDialogOpen(false);
       }
-      
+
       // Refresh the booking list to get the updated data
       await fetchBookings();
     } catch (error) {
@@ -334,7 +370,7 @@ function VendorBookings() {
       setIsLoading(false);
     }
   };
-  
+
   // Extract fetchBookings function so it can be reused
   const fetchBookings = async () => {
     if (!vendorId) {
@@ -350,37 +386,47 @@ function VendorBookings() {
       setIsLoading(true);
       // Get all bookings and filter for this vendor
       const response = await bookingService.getAllBookings();
-      
+
       // Filter bookings for this vendor
       const vendorBookings = response.data.filter(
         (booking) => booking.vendorId === vendorId
       );
 
-      console.log(`Found ${vendorBookings.length} bookings for vendor ${vendorId} from API`);
+      console.log(
+        `Found ${vendorBookings.length} bookings for vendor ${vendorId} from API`
+      );
 
       // Prepare to fetch couple details for all bookings
       const coupleIds = vendorBookings
-        .map(booking => booking.coupleId)
+        .map((booking) => booking.coupleId)
         .filter((id, index, self) => id && self.indexOf(id) === index); // Get unique coupleIds
-      
+
       console.log("Couple IDs to fetch:", coupleIds);
-      
+
       // Create a map to store couple details by ID
       const coupleDetailsMap = {};
-      
+
       // Fetch couple details if we have any bookings
       if (coupleIds.length > 0) {
         try {
           // For each couple ID, try to fetch details
           for (const coupleId of coupleIds) {
             try {
-              const coupleResponse = await axios.get(`http://localhost:8080/api/couple/${coupleId}`);
+              const coupleResponse = await axios.get(
+                `http://localhost:8080/api/couple/${coupleId}`
+              );
               if (coupleResponse.data) {
                 coupleDetailsMap[coupleId] = coupleResponse.data;
-                console.log(`Fetched details for couple ${coupleId}:`, coupleResponse.data);
+                console.log(
+                  `Fetched details for couple ${coupleId}:`,
+                  coupleResponse.data
+                );
               }
             } catch (coupleError) {
-              console.warn(`Error fetching details for couple ${coupleId}:`, coupleError);
+              console.warn(
+                `Error fetching details for couple ${coupleId}:`,
+                coupleError
+              );
             }
           }
         } catch (couplesError) {
@@ -392,7 +438,7 @@ function VendorBookings() {
       const enrichedBookings = vendorBookings.map((booking) => {
         // Get couple details if available
         const coupleDetails = coupleDetailsMap[booking.coupleId] || {};
-        
+
         return {
           ...booking,
           // Format date for display if it exists
@@ -404,25 +450,31 @@ function VendorBookings() {
           // Add couple details
           coupleDetails: coupleDetails,
           // Add formatted couple name for display
-          coupleNames: booking.coupleNames || coupleDetails?.name || "Unknown Couple",
+          coupleNames:
+            booking.coupleNames || coupleDetails?.name || "Unknown Couple",
           coupleEmail: coupleDetails?.email || "No email provided",
           couplePhone: coupleDetails?.phone || "No phone provided",
         };
       });
 
       console.log("Enriched bookings with couple details:", enrichedBookings);
-      
+
       // Filter out any bookings with invalid IDs before setting state
-      const validBookings = enrichedBookings.filter(booking => {
+      const validBookings = enrichedBookings.filter((booking) => {
         // Check if booking has a valid ID
-        const hasValidId = booking.bookingId && booking.bookingId !== 'undefined';
+        const hasValidId =
+          booking.bookingId && booking.bookingId !== "undefined";
         if (!hasValidId) {
-          console.warn('Filtered out booking with invalid ID:', booking);
+          console.warn("Filtered out booking with invalid ID:", booking);
         }
         return hasValidId;
       });
-      
-      console.log(`Filtered out ${enrichedBookings.length - validBookings.length} invalid bookings`);
+
+      console.log(
+        `Filtered out ${
+          enrichedBookings.length - validBookings.length
+        } invalid bookings`
+      );
       setBookings(validBookings);
     } catch (error) {
       console.error("Error fetching bookings from API:", error);
@@ -445,8 +497,8 @@ function VendorBookings() {
 
   const getStatusBadge = (status) => {
     // Normalize status to uppercase for consistency with backend enum values
-    const normalizedStatus = status ? status.toUpperCase() : '';
-    
+    const normalizedStatus = status ? status.toUpperCase() : "";
+
     switch (normalizedStatus) {
       case "REQUESTED":
         return (
@@ -486,7 +538,9 @@ function VendorBookings() {
         );
       default:
         // For any unknown status, display it with capitalized first letter
-        const displayStatus = status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : 'Unknown';
+        const displayStatus = status
+          ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+          : "Unknown";
         return <Badge variant="outline">{displayStatus}</Badge>;
     }
   };
@@ -576,7 +630,7 @@ function VendorBookings() {
                   <TableRow>
                     <TableHead>Couple</TableHead>
                     <TableHead>Date & Time</TableHead>
-                    <TableHead>Package</TableHead>
+                    {/* <TableHead>Package</TableHead> */}
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -598,13 +652,13 @@ function VendorBookings() {
                             {booking.formattedDate ||
                               new Date(booking.date).toLocaleDateString()}
                           </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
+                          {/* <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="h-3.5 w-3.5 mr-1" />
                             {booking.formattedTime || booking.time}
-                          </div>
+                          </div> */}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex items-center">
                           {booking.packageName}
                           {booking.packagePrice && (
@@ -613,11 +667,13 @@ function VendorBookings() {
                             </span>
                           )}
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>{getStatusBadge(booking.status)}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2 justify-end">
-                          {(booking.status === "pending" || booking.status === "PENDING" || booking.status === "REQUESTED") && (
+                          {(booking.status === "pending" ||
+                            booking.status === "PENDING" ||
+                            booking.status === "REQUESTED") && (
                             <>
                               <TooltipProvider>
                                 <Tooltip>
@@ -629,9 +685,15 @@ function VendorBookings() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         // Always use bookingId for consistency, falling back to id if needed
-                                        const targetId = booking.bookingId || booking.id;
-                                        if (!targetId || targetId === 'undefined') {
-                                          alert('Cannot confirm: Invalid booking ID');
+                                        const targetId =
+                                          booking.bookingId || booking.id;
+                                        if (
+                                          !targetId ||
+                                          targetId === "undefined"
+                                        ) {
+                                          alert(
+                                            "Cannot confirm: Invalid booking ID"
+                                          );
                                           return;
                                         }
                                         handleConfirmBooking(targetId);
@@ -656,9 +718,15 @@ function VendorBookings() {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         // Always use bookingId for consistency, falling back to id if needed
-                                        const targetId = booking.bookingId || booking.id;
-                                        if (!targetId || targetId === 'undefined') {
-                                          alert('Cannot cancel: Invalid booking ID');
+                                        const targetId =
+                                          booking.bookingId || booking.id;
+                                        if (
+                                          !targetId ||
+                                          targetId === "undefined"
+                                        ) {
+                                          alert(
+                                            "Cannot cancel: Invalid booking ID"
+                                          );
                                           return;
                                         }
                                         handleCancelBooking(targetId);
@@ -674,7 +742,8 @@ function VendorBookings() {
                               </TooltipProvider>
                             </>
                           )}
-                          {(booking.status === "confirmed" || booking.status === "CONFIRMED") && (
+                          {(booking.status === "confirmed" ||
+                            booking.status === "CONFIRMED") && (
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
@@ -704,9 +773,15 @@ function VendorBookings() {
                                   <AlertDialogAction
                                     onClick={() => {
                                       // Always use bookingId for consistency, falling back to id if needed
-                                      const targetId = booking.bookingId || booking.id;
-                                      if (!targetId || targetId === 'undefined') {
-                                        alert('Cannot cancel: Invalid booking ID');
+                                      const targetId =
+                                        booking.bookingId || booking.id;
+                                      if (
+                                        !targetId ||
+                                        targetId === "undefined"
+                                      ) {
+                                        alert(
+                                          "Cannot cancel: Invalid booking ID"
+                                        );
                                         return;
                                       }
                                       handleCancelBooking(targetId);
@@ -718,7 +793,8 @@ function VendorBookings() {
                               </AlertDialogContent>
                             </AlertDialog>
                           )}
-                          {(booking.status === "cancelled" || booking.status === "CANCELLED") && (
+                          {(booking.status === "cancelled" ||
+                            booking.status === "CANCELLED") && (
                             <span className="px-2 py-1 text-sm text-muted-foreground">
                               No actions available
                             </span>
@@ -774,14 +850,14 @@ function VendorBookings() {
                 <div className="col-span-3 sm:col-span-2">
                   {selectedBooking.coupleNames}
                 </div>
-                
+
                 <div className="col-span-3 sm:col-span-1 font-medium">
                   Contact Email:
                 </div>
                 <div className="col-span-3 sm:col-span-2">
                   {selectedBooking.coupleEmail || "No email provided"}
                 </div>
-                
+
                 <div className="col-span-3 sm:col-span-1 font-medium">
                   Contact Phone:
                 </div>
@@ -796,14 +872,14 @@ function VendorBookings() {
                   {selectedBooking.formattedDate}
                 </div>
 
-                <div className="col-span-3 sm:col-span-1 font-medium">
+                {/* <div className="col-span-3 sm:col-span-1 font-medium">
                   Time:
                 </div>
                 <div className="col-span-3 sm:col-span-2">
                   {selectedBooking.formattedTime}
-                </div>
+                </div> */}
 
-                <div className="col-span-3 sm:col-span-1 font-medium">
+                {/* <div className="col-span-3 sm:col-span-1 font-medium">
                   Package:
                 </div>
                 <div className="col-span-3 sm:col-span-2">
@@ -813,8 +889,8 @@ function VendorBookings() {
                       (${selectedBooking.packagePrice.toLocaleString()})
                     </span>
                   )}
-                </div>
-                
+                </div> */}
+
                 <div className="col-span-3 sm:col-span-1 font-medium">
                   Booking ID:
                 </div>
@@ -829,26 +905,27 @@ function VendorBookings() {
                   {getStatusBadge(selectedBooking.status)}
                 </div>
 
-                <div className="col-span-3 font-medium">Notes:</div>
+                {/* <div className="col-span-3 font-medium">Notes:</div>
                 <div className="col-span-3 p-3 bg-muted/30 rounded-md text-sm">
                   {selectedBooking.notes || "No notes provided."}
-                </div>
+                </div> */}
               </div>
 
               <div className="flex justify-end space-x-2 pt-4 border-t">
                 {/* Support multiple status formats (REQUESTED/requested/pending) */}
-                {(selectedBooking.status === "REQUESTED" || 
-                  selectedBooking.status === "requested" || 
-                  selectedBooking.status === "PENDING" || 
+                {(selectedBooking.status === "REQUESTED" ||
+                  selectedBooking.status === "requested" ||
+                  selectedBooking.status === "PENDING" ||
                   selectedBooking.status === "pending") && (
                   <>
                     <Button
                       variant="outline"
                       onClick={() => {
                         // Use bookingId for consistency, falling back to id if needed
-                        const targetId = selectedBooking.bookingId || selectedBooking.id;
-                        if (!targetId || targetId === 'undefined') {
-                          alert('Cannot decline: Invalid booking ID');
+                        const targetId =
+                          selectedBooking.bookingId || selectedBooking.id;
+                        if (!targetId || targetId === "undefined") {
+                          alert("Cannot decline: Invalid booking ID");
                           return;
                         }
                         handleCancelBooking(targetId);
@@ -860,9 +937,10 @@ function VendorBookings() {
                     <Button
                       onClick={() => {
                         // Use bookingId for consistency, falling back to id if needed
-                        const targetId = selectedBooking.bookingId || selectedBooking.id;
-                        if (!targetId || targetId === 'undefined') {
-                          alert('Cannot accept: Invalid booking ID');
+                        const targetId =
+                          selectedBooking.bookingId || selectedBooking.id;
+                        if (!targetId || targetId === "undefined") {
+                          alert("Cannot accept: Invalid booking ID");
                           return;
                         }
                         handleConfirmBooking(targetId);
@@ -875,14 +953,16 @@ function VendorBookings() {
                   </>
                 )}
                 {/* Support multiple status formats for confirmed bookings */}
-                {(selectedBooking.status === "CONFIRMED" || selectedBooking.status === "confirmed") && (
+                {(selectedBooking.status === "CONFIRMED" ||
+                  selectedBooking.status === "confirmed") && (
                   <Button
                     variant="outline"
                     onClick={() => {
                       // Use bookingId for consistency, falling back to id if needed
-                      const targetId = selectedBooking.bookingId || selectedBooking.id;
-                      if (!targetId || targetId === 'undefined') {
-                        alert('Cannot cancel: Invalid booking ID');
+                      const targetId =
+                        selectedBooking.bookingId || selectedBooking.id;
+                      if (!targetId || targetId === "undefined") {
+                        alert("Cannot cancel: Invalid booking ID");
                         return;
                       }
                       handleCancelBooking(targetId);

@@ -1,1 +1,26 @@
-[{"id":"vendor-1746872983571","email":"events@nullpointervenues.dev","password":"0000","name":"NullPointer Venues","phone":"0717110160","role":"VENDOR","vendorType":"VENUE","businessName":null,"rating":0.0,"availability":null,"rejectionReason":null,"approvalDate":null,"rejectionDate":null,"category":null,"portfolioItems":[],"servicePackages":[],"address":"42 Runtime Avenue","city":null,"state":null,"zipCode":null,"serviceRadius":0.0,"socialMediaLinks":{},"rejected":false,"approved":false}]
+[
+  {
+    "id": "vendor-1747073732538",
+    "email": "admin@gmail.com",
+    "password": "0000",
+    "name": "Chalk Technologies",
+    "phone": "0712193355",
+    "role": "VENDOR",
+    "vendorType": "CATERING",
+    "rating": 0.0,
+    "availability": [],
+    "rejectionReason": "",
+    "category": "",
+    "portfolioItems": [],
+    "imageUrls": [],
+    "servicePackages": [],
+    "address": "",
+    "city": "",
+    "state": "",
+    "zipCode": "",
+    "serviceRadius": 0.0,
+    "socialMediaLinks": {},
+    "rejected": false,
+    "approved": false
+  }
+]

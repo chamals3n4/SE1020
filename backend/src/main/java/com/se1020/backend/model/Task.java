@@ -6,6 +6,7 @@ import java.util.Date;
 public class Task {
     private String taskId;
     private String weddingId;   // Link to the wedding this task belongs to
+    private String name;        // Task name for quick identification
     private String description;
     private Date dueDate;
     private boolean isCompleted;
@@ -13,9 +14,10 @@ public class Task {
     public Task() {
     }
     
-    public Task(String taskId, String weddingId, String description, Date dueDate, boolean isCompleted) {
+    public Task(String taskId, String weddingId, String name, String description, Date dueDate, boolean isCompleted) {
         this.taskId = taskId;
         this.weddingId = weddingId;
+        this.name = name;
         this.description = description;
         this.dueDate = dueDate;
         this.isCompleted = isCompleted;
@@ -27,6 +29,14 @@ public class Task {
     
     public void setTaskId(String taskId) {
         this.taskId = taskId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
     
     public String getDescription() {

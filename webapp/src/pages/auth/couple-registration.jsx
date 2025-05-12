@@ -14,12 +14,19 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CalendarIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  Heart,
+  Mail,
+  Phone,
+  User,
+  Gem,
+  MapPin,
+} from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -28,6 +35,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import axios from "axios";
+import WeddingHeader from "../../components/wedding-header";
 
 function CoupleRegistration() {
   const navigate = useNavigate();
@@ -58,7 +66,7 @@ function CoupleRegistration() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       // Validate password match
       if (formData.password !== formData.confirmPassword) {
@@ -72,7 +80,7 @@ function CoupleRegistration() {
       const timestamp = Date.now();
       const coupleId = `couple-${timestamp}`;
       const weddingId = `wedding-${timestamp}`;
-      
+
       // Generate a separate ID for each partner to support multiple partners
       // For now we have one partner, but this approach allows for more partners in the future
       const partners = [
@@ -87,10 +95,10 @@ function CoupleRegistration() {
           role: "PARTNER",
           coupleId: coupleId, // Reference back to the couple
           weddingId: weddingId, // Reference to the wedding
-          createdAt: new Date().toISOString()
-        }
+          createdAt: new Date().toISOString(),
+        },
       ];
-      
+
       // First, attempt to save to the backend (if backend is working)
       const apiData = {
         id: coupleId,
@@ -106,26 +114,78 @@ function CoupleRegistration() {
         style: formData.style || "",
         weddingId: weddingId,
         // Store array of partner IDs instead of a single partnerId
-        partnerIds: partners.map(p => p.id),
+        partnerIds: partners.map((p) => p.id),
         // Include full partner objects
         partners: partners,
         // Created and updated timestamps
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
-      
+
       let apiResponse = null;
-      
+
       try {
-        // Send to backend API
-        const response = await axios.post("http://localhost:8080/api/couple", apiData);
-        apiResponse = response.data;
-        console.log("API registration successful:", apiResponse);
+        // First create the couple
+        const coupleData = {
+          id: coupleId,
+          email: formData.email,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          name: `${formData.firstName} ${formData.lastName}`,
+          phone: formData.phone,
+          role: "COUPLE",
+          budget: parseFloat(formData.budget) || 0,
+          weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
+          style: formData.style || "",
+          partnerIds: partners.map((p) => p.id),
+          partners: partners,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        console.log("Creating couple with data:", coupleData);
+
+        // Create couple in backend
+        const coupleResponse = await axios.post(
+          "http://localhost:8080/api/couple",
+          coupleData
+        );
+        console.log("Couple created successfully:", coupleResponse.data);
+
+        // Then create the wedding with the couple's ID
+        const weddingData = {
+          weddingId: weddingId,
+          name: `${formData.firstName} & ${formData.partnerFirstName}'s Wedding`,
+          date: weddingDate ? format(weddingDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'") : null,
+          coupleId: coupleId,
+          budget: parseFloat(formData.budget) || 0,
+          style: formData.style ? formData.style.toUpperCase() : "TRADITIONAL",
+          location: "",
+          tasks: []
+        };
+
+        console.log("Creating wedding with data:", weddingData);
+
+        // Create wedding in backend
+        const weddingResponse = await axios.post(
+          "http://localhost:8080/api/wedding/profile",
+          weddingData
+        );
+        console.log("Wedding created successfully:", weddingResponse.data);
+
+        apiResponse = coupleResponse.data;
       } catch (apiError) {
-        console.warn("API registration failed, using local auth only:", apiError);
-        // Continue with local auth even if API fails
+        console.error(
+          "API registration failed:",
+          apiError.response?.data || apiError
+        );
+        // Don't continue with local auth if API fails
+        throw new Error(
+          "Failed to register with the server. Please try again."
+        );
       }
-      
+
       // Register with our auth context (stores in localStorage)
       // Use the IDs from API response if available, otherwise use our generated IDs
       const userData = {
@@ -147,11 +207,11 @@ function CoupleRegistration() {
         weddingId: apiResponse?.weddingId || weddingId,
         style: formData.style || "",
         // Timestamps
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       await register(userData, "couple");
-      
+
       // Registration and auto-login successful, navigate to dashboard
       navigate("/dashboard/couple");
     } catch (error) {
@@ -162,244 +222,369 @@ function CoupleRegistration() {
     }
   };
 
+  const FormDivider = () => (
+    <div className="flex items-center my-8">
+      <div className="flex-grow h-px bg-gray-200"></div>
+      <div className="mx-4 flex items-center">
+        <Heart className="w-4 h-4 text-violet-400 mr-2" />
+        <span className="text-sm font-medium text-gray-500">
+          Partner Details
+        </span>
+      </div>
+      <div className="flex-grow h-px bg-gray-200"></div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-3xl">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
-            Couple Registration
-          </CardTitle>
-          <CardDescription>
-            Create an account to plan your perfect wedding
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Your First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Your Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-violet-100 to-white bg-fixed">
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-wedding-blush rounded-full opacity-20 -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-wedding-blush rounded-full opacity-20 translate-x-1/2 translate-y-1/2 blur-3xl" />
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Your Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <WeddingHeader />
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Your Phone Number</Label>
-              <Input
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <Card className="max-w-4xl mx-auto bg-white/80 backdrop-blur-sm animate-fade-in border-none shadow-none">
+          <CardContent className="pt-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* First column */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                    <User className="w-5 h-5 mr-2 text-violet-400" />
+                    Your Information
+                  </h3>
 
-            <div className="space-y-2">
-              <Label htmlFor="budget">Wedding Budget</Label>
-              <Input
-                id="budget"
-                name="budget"
-                type="number"
-                value={formData.budget}
-                onChange={handleChange}
-                placeholder="Enter budget amount"
-                required
-              />
-            </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="text-gray-700">
+                        First Name
+                      </Label>
+                      <Input
+                        id="firstName"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-gray-700">
+                        Last Name
+                      </Label>
+                      <Input
+                        id="lastName"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                  </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="weddingDate">Wedding Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="email"
+                      className="text-gray-700 flex items-center"
                     >
-                      {weddingDate ? (
-                        format(weddingDate, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={weddingDate}
-                      onSelect={setWeddingDate}
-                      disabled={(date) =>
-                        date < new Date() || date > new Date("2030-01-01")
-                      }
-                      initialFocus
+                      <Mail className="w-4 h-4 mr-2 text-violet-400" /> Email
+                      Address
+                    </Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
                     />
-                  </PopoverContent>
-                </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="phone"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <Phone className="w-4 h-4 mr-2 text-violet-400" /> Phone
+                      Number
+                    </Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-gray-700">
+                        Password
+                      </Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="confirmPassword"
+                        className="text-gray-700"
+                      >
+                        Confirm Password
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Second column */}
+                <div className="space-y-6">
+                  <h3 className="text-lg font-medium text-gray-700 mb-4 flex items-center">
+                    <Heart className="w-5 h-5 mr-2 text-violet-400" />
+                    Wedding Details
+                  </h3>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="budget"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <Gem className="w-4 h-4 mr-2 text-violet-400" /> Wedding
+                      Budget
+                    </Label>
+                    <Input
+                      id="budget"
+                      name="budget"
+                      type="number"
+                      value={formData.budget}
+                      onChange={handleChange}
+                      placeholder="Enter budget amount"
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="weddingDate"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <CalendarIcon className="w-4 h-4 mr-2 text-violet-400" />{" "}
+                      Wedding Date
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal border-gray-300 hover:bg-wedding-blush/10 hover:text-violet-400"
+                        >
+                          {weddingDate ? (
+                            format(weddingDate, "PPP")
+                          ) : (
+                            <span className="text-gray-500">Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 border-violet-400/20"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          selected={weddingDate}
+                          onSelect={setWeddingDate}
+                          disabled={(date) =>
+                            date < new Date() || date > new Date("2030-01-01")
+                          }
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="style"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <MapPin className="w-4 h-4 mr-2 text-violet-400" />{" "}
+                      Wedding Style
+                    </Label>
+                    <Select
+                      name="style"
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, style: value }))
+                      }
+                      value={formData.style}
+                    >
+                      <SelectTrigger className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20">
+                        <SelectValue placeholder="Select a wedding style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="TRADITIONAL">Traditional</SelectItem>
+                        <SelectItem value="RUSTIC">Rustic</SelectItem>
+                        <SelectItem value="BEACH">Beach</SelectItem>
+                        <SelectItem value="ELEGANT">Elegant</SelectItem>
+                        <SelectItem value="MODERN">Modern</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="style">Wedding Style</Label>
-              <Select 
-                name="style" 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, style: value }))} 
-                value={formData.style}
+
+              <FormDivider />
+
+              {/* Partner Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="partnerFirstName"
+                        className="text-gray-700"
+                      >
+                        First Name
+                      </Label>
+                      <Input
+                        id="partnerFirstName"
+                        name="partnerFirstName"
+                        value={formData.partnerFirstName}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="partnerLastName"
+                        className="text-gray-700"
+                      >
+                        Last Name
+                      </Label>
+                      <Input
+                        id="partnerLastName"
+                        name="partnerLastName"
+                        value={formData.partnerLastName}
+                        onChange={handleChange}
+                        required
+                        className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="partnerEmail"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <Mail className="w-4 h-4 mr-2 text-violet-400" /> Email
+                      Address
+                    </Label>
+                    <Input
+                      id="partnerEmail"
+                      name="partnerEmail"
+                      type="email"
+                      value={formData.partnerEmail}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="partnerPassword" className="text-gray-700">
+                      Password
+                    </Label>
+                    <Input
+                      id="partnerPassword"
+                      name="partnerPassword"
+                      type="password"
+                      value={formData.partnerPassword}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="partnerPhone"
+                      className="text-gray-700 flex items-center"
+                    >
+                      <Phone className="w-4 h-4 mr-2 text-violet-400" /> Phone
+                      Number
+                    </Label>
+                    <Input
+                      id="partnerPhone"
+                      name="partnerPhone"
+                      value={formData.partnerPhone}
+                      onChange={handleChange}
+                      required
+                      className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6">
+                <Button
+                  type="submit"
+                  className="w-full bg-violet-500"
+                  disabled={isLoading}
+                >
+                  {isLoading
+                    ? "Creating Account..."
+                    : "Begin Your Wedding Journey"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex flex-col space-y-3 border-t pt-6 bg-gray-50/50">
+            <div className="text-sm text-center text-gray-600">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="text-wedding-burgundy font-medium hover:underline"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a wedding style" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="classic">Classic & Traditional</SelectItem>
-                  <SelectItem value="rustic">Rustic & Country</SelectItem>
-                  <SelectItem value="beach">Beach & Coastal</SelectItem>
-                  <SelectItem value="garden">Garden & Outdoor</SelectItem>
-                  <SelectItem value="modern">Modern & Minimalist</SelectItem>
-                  <SelectItem value="vintage">Vintage & Retro</SelectItem>
-                  <SelectItem value="bohemian">Bohemian & Whimsical</SelectItem>
-                  <SelectItem value="glamorous">Glamorous & Luxury</SelectItem>
-                  <SelectItem value="destination">Destination Wedding</SelectItem>
-                  <SelectItem value="themed">Themed Wedding</SelectItem>
-                </SelectContent>
-              </Select>
+                Sign in
+              </Link>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+            <div className="text-sm text-center text-gray-600">
+              Are you a vendor?{" "}
+              <Link
+                to="/register/vendor"
+                className="text-wedding-burgundy font-medium hover:underline"
+              >
+                Register as a vendor
+              </Link>
             </div>
-
-            <hr className="my-4" />
-            <h3 className="text-lg font-semibold">Partner Information</h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="partnerFirstName">Partner First Name</Label>
-                <Input
-                  id="partnerFirstName"
-                  name="partnerFirstName"
-                  value={formData.partnerFirstName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="partnerLastName">Partner Last Name</Label>
-                <Input
-                  id="partnerLastName"
-                  name="partnerLastName"
-                  value={formData.partnerLastName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="partnerEmail">Partner Email</Label>
-              <Input
-                id="partnerEmail"
-                name="partnerEmail"
-                type="email"
-                value={formData.partnerEmail}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="partnerPassword">Partner Password</Label>
-              <Input
-                id="partnerPassword"
-                name="partnerPassword"
-                type="password"
-                value={formData.partnerPassword}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="partnerPhone">Partner Phone</Label>
-              <Input
-                id="partnerPhone"
-                name="partnerPhone"
-                value={formData.partnerPhone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating Account..." : "Create Account"}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-1 border-t pt-6">
-          <div className="text-sm text-center text-gray-500">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
-          </div>
-          <div className="text-sm text-center text-gray-500">
-            Are you a vendor?{" "}
-            <Link
-              to="/register/vendor"
-              className="text-primary font-medium hover:underline"
-            >
-              Register as a vendor
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }

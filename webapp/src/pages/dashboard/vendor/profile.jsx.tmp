@@ -1,0 +1,295 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { vendorService } from "@/services/api";
+import { Loader2, ImageIcon, Plus } from "lucide-react";
+import { toast } from "sonner";
+
+export default function VendorProfile() {
+  // Get vendor data from localStorage
+  const userStr = localStorage.getItem("currentUser");
+  const user = userStr ? JSON.parse(userStr) : {};
+  const vendorId = user.id;
+
+  // Loading state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Initialize profile data
+  const [profileData, setProfileData] = useState({
+    id: vendorId || "",
+    name: user.name || "Your Business Name",
+    email: user.email || "you@example.com",
+    phone: user.phone || "",
+    vendorType: user.vendorType || "PHOTOGRAPHY",
+    description: user.description || "",
+    address: user.address || "",
+    city: user.city || "",
+    state: user.state || "",
+    zip: user.zip || "",
+    isAvailable: user.isAvailable !== false, // Default to true
+  });
+
+  // Fetch vendor data from backend when component mounts
+  useEffect(() => {
+    const fetchVendorData = async () => {
+      if (!vendorId) {
+        setLoading(false);
+        setError("No vendor ID found. Please log in again.");
+        return;
+      }
+
+      try {
+        const response = await vendorService.getVendorById(vendorId);
+        const vendorData = response.data;
+
+        if (vendorData) {
+          // Update profile data with fetched data
+          setProfileData((prev) => ({
+            ...prev,
+            id: vendorData.id || vendorId,
+            name: vendorData.name || prev.name,
+            email: vendorData.email || prev.email,
+            phone: vendorData.phone || prev.phone,
+            vendorType: vendorData.vendorType || prev.vendorType,
+            description: vendorData.description || prev.description,
+            address: vendorData.address || prev.address,
+            city: vendorData.city || prev.city,
+            state: vendorData.state || prev.state,
+            zip: vendorData.zip || prev.zip,
+            isAvailable:
+              vendorData.isAvailable !== undefined
+                ? vendorData.isAvailable
+                : prev.isAvailable,
+          }));
+
+          // Update localStorage with the most current data
+          localStorage.setItem(
+            "currentUser",
+            JSON.stringify({
+              ...user,
+              ...vendorData,
+            })
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching vendor data:", err);
+        setError("Failed to load vendor data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVendorData();
+  }, [vendorId]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleToggleChange = (name, value) => {
+    setProfileData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await vendorService.updateVendorProfile(vendorId, profileData);
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+          <p className="text-sm text-gray-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <p className="text-red-500">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto py-8 px-4">
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex justify-between items-center border-b pb-4">
+          <div className="flex items-center space-x-3">
+            <div className="h-12 w-12 rounded-md bg-gray-100 flex items-center justify-center text-base font-medium text-gray-600">
+              {profileData.name?.charAt(0)}
+            </div>
+            <div>
+              <h1 className="text-lg font-medium text-gray-900">{profileData.name}</h1>
+              <p className="text-sm text-gray-500">{profileData.vendorType}</p>
+            </div>
+          </div>
+          <Button onClick={handleSave} variant="outline" size="sm">
+            Save Changes
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Business Info */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Business Information */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-medium text-gray-900">Business Information</h2>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name" className="text-sm text-gray-600">Business Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={profileData.name}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="vendorType" className="text-sm text-gray-600">Business Type</Label>
+                  <Input
+                    id="vendorType"
+                    name="vendorType"
+                    value={profileData.vendorType}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description" className="text-sm text-gray-600">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={profileData.description}
+                    onChange={handleInputChange}
+                    rows={4}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone" className="text-sm text-gray-600">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={profileData.phone}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="text-sm text-gray-600">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    value={profileData.email}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-medium text-gray-900">Location</h2>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="address" className="text-sm text-gray-600">Address</Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    value={profileData.address}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="city" className="text-sm text-gray-600">City</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={profileData.city}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state" className="text-sm text-gray-600">State/Province</Label>
+                  <Input
+                    id="state"
+                    name="state"
+                    value={profileData.state}
+                    onChange={handleInputChange}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Status */}
+          <div className="space-y-4">
+            <div className="p-4 border rounded-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Availability</p>
+                  <p className="text-sm text-gray-500">
+                    {profileData.isAvailable ? "Open to bookings" : "Not accepting bookings"}
+                  </p>
+                </div>
+                <Switch
+                  id="isAvailable"
+                  name="isAvailable"
+                  checked={profileData.isAvailable}
+                  onCheckedChange={(checked) =>
+                    handleToggleChange("isAvailable", checked)
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="p-4 border rounded-md">
+              <p className="text-sm font-medium text-gray-900 mb-3">Quick Actions</p>
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full justify-start text-sm h-8" size="sm">
+                  <Plus className="h-3 w-3 mr-2" />
+                  Add Service Package
+                </Button>
+                <Button variant="outline" className="w-full justify-start text-sm h-8" size="sm">
+                  <ImageIcon className="h-3 w-3 mr-2" />
+                  Update Gallery
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

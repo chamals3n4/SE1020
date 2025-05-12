@@ -23,6 +23,16 @@ public class WeddingService {
     }
 
     public void createWedding(Wedding wedding) throws IOException {
+        // Generate a unique ID if not provided
+        if (wedding.getWeddingId() == null || wedding.getWeddingId().isEmpty()) {
+            wedding.setWeddingId("w-" + System.currentTimeMillis());
+        }
+        
+        // Ensure coupleId is set
+        if (wedding.getCoupleId() == null || wedding.getCoupleId().isEmpty()) {
+            throw new IllegalArgumentException("Couple ID is required for wedding creation");
+        }
+        
         weddingRepository.save(wedding);
     }
 

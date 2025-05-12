@@ -402,7 +402,7 @@ function VendorPortfolio() {
           <div className="mt-6">
             <Button
               onClick={() => {
-                window.location.href = "/dashboard/couple/vendors";
+                window.location.href = "/dashboard/vendor/profile";
               }}
               className="w-full"
             >

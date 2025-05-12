@@ -1,5 +1,6 @@
 package com.se1020.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.se1020.backend.enums.WeddingStyle;
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,7 +13,10 @@ import java.util.List;
 public class Wedding {
     private String weddingId;
     private String coupleId;  // Reference to the couple who owns this wedding
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private Date date;
+    
     private String location;
     private WeddingStyle style;
     private double budget;
@@ -62,7 +66,11 @@ public class Wedding {
     }
     
     public void setStyle(WeddingStyle style) {
-        this.style = style;
+        if (style == null) {
+            this.style = WeddingStyle.TRADITIONAL; // Default style
+        } else {
+            this.style = style;
+        }
     }
     
     public double getBudget() {
