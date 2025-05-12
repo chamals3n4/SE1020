@@ -106,110 +106,42 @@ function FindVendors() {
         setVendors(processedVendors);
         setFilteredVendors(processedVendors);
 
-        // Check if a URL is accessible (returns an image)
-        const checkImageUrl = async (url) => {
-          return new Promise((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve(true);
-            img.onerror = () => resolve(false);
-            img.src = url;
-          });
-        };
-
         // Then fetch images for each vendor from Supabase
         const fetchVendorImages = async () => {
-          // Test bucket access first
           try {
-            const { data: testData, error: testError } = await supabase.storage
-              .from("images")
-              .list();
-
-            if (testError) {
-              console.error("Error accessing bucket:", testError);
-              setFetchError(
-                `Bucket access error: ${testError.message}. Check your Supabase RLS policies.`
-              );
-              return;
-            }
-
-            console.log("Bucket access successful. Root contents:", testData);
-          } catch (err) {
-            console.error("Error testing bucket:", err);
-            setFetchError(`Bucket test error: ${err.message}`);
-            return;
-          }
-
-          for (const vendor of processedVendors) {
-            try {
-              // List all files in this vendor's specific folder
-              const { data, error } = await supabase.storage
-                .from("images")
-                .list(`vendors/${vendor.id}`);
-
-              if (error) {
-                console.error(
-                  `Error fetching images for vendor ${vendor.id}:`,
-                  error
-                );
-                // Don't set global error for individual vendor failures
-                continue;
-              }
-
-              if (data && data.length > 0) {
-                console.log(
-                  `Found ${data.length} images for vendor ${vendor.id}:`,
-                  data
-                );
-
-                // Get public URLs for all files directly without checking accessibility
-                // This ensures we at least try to display the images even if they might not load
-                const imageUrls = data.map((file) => {
-                  const { data: publicUrlData } = supabase.storage
+            // For each vendor, list their images
+            const updatedVendors = await Promise.all(
+              processedVendors.map(async (vendor) => {
+                try {
+                  const { data, error } = await supabase.storage
                     .from("images")
-                    .getPublicUrl(`vendors/${vendor.id}/${file.name}`);
+                    .list(`vendors/${vendor.id}`);
+                  console.log(`Files in vendors/${vendor.id}:`, data);
 
-                  const url = publicUrlData.publicUrl;
-                  console.log(`Generated URL for ${file.name}:`, url);
-                  return url;
-                });
-
-                console.log(
-                  `Added ${imageUrls.length} images for vendor ${vendor.id}:`,
-                  imageUrls
-                );
-
-                if (imageUrls.length > 0) {
-                  console.log(
-                    `Updating vendor ${vendor.id} with ${imageUrls.length} images`
-                  );
-
-                  // Force a direct update to the vendor object
-                  vendor.portfolioImages = imageUrls;
-
-                  // Make a complete new copy of the array
-                  const updatedVendors = processedVendors.map((v) => {
-                    if (v.id === vendor.id) {
-                      return {
-                        ...v,
-                        portfolioImages: imageUrls,
-                      };
-                    }
-                    return v;
-                  });
-
-                  // Update both state variables
-                  console.log("Setting new vendors state with updated images");
-                  setVendors(updatedVendors);
-                  const filtered = getFilteredVendors(updatedVendors, filters);
-                  setFilteredVendors(filtered);
+                  let portfolioImages = [];
+                  if (data && data.length > 0) {
+                    portfolioImages = data
+                      .filter(file => file.name) // Only files, not folders
+                      .map(file => {
+                        const { data: publicUrlData } = supabase.storage
+                          .from("images")
+                          .getPublicUrl(`vendors/${vendor.id}/${file.name}`);
+                        return publicUrlData.publicUrl;
+                      });
+                  }
+                  return { ...vendor, portfolioImages };
+                } catch (err) {
+                  console.error(`Error processing images for vendor ${vendor.id}:`, err);
+                  return { ...vendor, portfolioImages: [] };
                 }
-              }
-            } catch (err) {
-              console.error(
-                `Error processing images for vendor ${vendor.id}:`,
-                err
-              );
-            }
+              })
+            );
+
+            setVendors(updatedVendors);
+            setFilteredVendors(updatedVendors);
+          } catch (err) {
+            console.error("Error fetching vendor images:", err);
+            setFetchError(`Error fetching vendor images: ${err.message}`);
           }
         };
 
@@ -608,25 +540,23 @@ function FindVendors() {
                       <Carousel className="w-full">
                         <CarouselContent>
                           {vendor.portfolioImages.map((imageUrl, index) => {
-                            console.log(
-                              `Rendering image ${index} for vendor ${vendor.id}:`,
-                              imageUrl
-                            );
+                            console.log(`Rendering image ${index} for vendor ${vendor.id}:`, imageUrl);
                             return (
-                              <CarouselItem key={index}>
-                                <img
-                                  src={imageUrl}
-                                  alt={`${vendor.name} portfolio ${index + 1}`}
-                                  className="object-cover w-full h-48 rounded-t-lg"
-                                  onError={(e) => {
-                                    console.error(
-                                      `Failed to load image ${index} for ${vendor.name}:`,
-                                      imageUrl
-                                    );
-                                    e.target.src =
-                                      "https://placehold.co/600x400?text=Image+Not+Found";
-                                  }}
-                                />
+                              <CarouselItem key={`${vendor.id}-image-${index}`}>
+                                <div className="relative h-48 w-full">
+                                  <img
+                                    src={imageUrl}
+                                    alt={`${vendor.name} portfolio ${index + 1}`}
+                                    className="object-cover w-full h-full rounded-t-lg"
+                                    onError={(e) => {
+                                      console.error(
+                                        `Failed to load image ${index} for ${vendor.name}:`,
+                                        imageUrl
+                                      );
+                                      e.target.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                    }}
+                                  />
+                                </div>
                               </CarouselItem>
                             );
                           })}

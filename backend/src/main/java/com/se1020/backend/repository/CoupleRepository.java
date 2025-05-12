@@ -42,8 +42,14 @@ public class CoupleRepository {
 
     public void save(Couple couple) throws IOException {
         List<Couple> couples = findAll();
-        couples.add(couple);
-        objectMapper.writeValue(file, couples);
+        // Check if couple already exists
+        boolean exists = couples.stream()
+                .anyMatch(c -> c.getId().equals(couple.getId()));
+        
+        if (!exists) {
+            couples.add(couple);
+            objectMapper.writeValue(file, couples);
+        }
     }
 
     public void update(Couple couple) throws IOException {

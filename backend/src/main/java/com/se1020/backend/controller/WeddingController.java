@@ -4,6 +4,7 @@ import com.se1020.backend.model.Task;
 import com.se1020.backend.model.Wedding;
 import com.se1020.backend.service.TaskService;
 import com.se1020.backend.service.WeddingService;
+import com.se1020.backend.enums.WeddingStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/wedding")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowCredentials = "true")
 public class WeddingController {
 
     @Autowired
@@ -62,30 +64,42 @@ public class WeddingController {
      */
     @PostMapping("/profile")
     public ResponseEntity<Wedding> createWeddingProfile(@RequestBody Wedding wedding) throws IOException {
-        // Mark this wedding as a request object
-        wedding.asRequestObject();
+        try {
+            // Mark this wedding as a request object
+            wedding.asRequestObject();
 
-        // Create a new entity from the request
-        Wedding entity = wedding.toEntity();
-
-        // Create the wedding in the system
-        weddingService.createWedding(entity);
-
-        // All tasks are already part of the wedding entity from the toEntity()
-        // conversion
-        // Update any task wedding IDs if needed
-        for (Task task : entity.getTasks()) {
-            if (task.getWeddingId() == null || task.getWeddingId().isEmpty()) {
-                task.setWeddingId(entity.getWeddingId());
+            // Ensure style is set
+            if (wedding.getStyle() == null) {
+                wedding.setStyle(WeddingStyle.TRADITIONAL);
             }
-        }
 
-        // Update the wedding with the tasks
-        if (!entity.getTasks().isEmpty()) {
-            weddingService.updateWedding(entity);
-        }
+            // Create a new entity from the request
+            Wedding entity = wedding.toEntity();
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(entity);
+            // Create the wedding in the system
+            weddingService.createWedding(entity);
+
+            // All tasks are already part of the wedding entity from the toEntity()
+            // conversion
+            // Update any task wedding IDs if needed
+            for (Task task : entity.getTasks()) {
+                if (task.getWeddingId() == null || task.getWeddingId().isEmpty()) {
+                    task.setWeddingId(entity.getWeddingId());
+                }
+            }
+
+            // Update the wedding with the tasks
+            if (!entity.getTasks().isEmpty()) {
+                weddingService.updateWedding(entity);
+            }
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(entity);
+        } catch (Exception e) {
+            // Log the error and return a more descriptive error response
+            System.err.println("Error creating wedding profile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PutMapping("/{id}")

@@ -22,11 +22,8 @@ import { Button } from "@/components/ui/button";
 
 const vendorNavItems = [
   { icon: Home, label: "Dashboard", path: "/dashboard/vendor" },
-  { icon: ShoppingBag, label: "Services", path: "/dashboard/vendor/services" },
   { icon: Calendar, label: "Bookings", path: "/dashboard/vendor/bookings" },
-  { icon: PlusCircle, label: "Portfolio", path: "/dashboard/vendor/portfolio" },
   { icon: User, label: "Profile", path: "/dashboard/vendor/profile" },
-  { icon: Settings, label: "Settings", path: "/dashboard/vendor/settings" },
 ];
 
 const coupleNavItems = [
@@ -36,7 +33,6 @@ const coupleNavItems = [
   { icon: PlusCircle, label: "Wedding", path: "/dashboard/couple/wedding" },
   { icon: ShoppingBag, label: "Tasks", path: "/dashboard/couple/tasks" },
   { icon: User, label: "Profile", path: "/dashboard/couple/profile" },
-  { icon: Settings, label: "Settings", path: "/dashboard/couple/settings" },
 ];
 
 const adminNavItems = [

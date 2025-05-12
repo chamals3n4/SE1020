@@ -50,6 +50,9 @@ export const vendorService = {
   updateVendorLocation: (id, locationData) =>
     api.put(`/vendor/${id}/location`, null, { params: locationData }),
 
+  createVendorProfile: (profileData) =>
+    api.post('/vendor/profile', profileData),
+
   getVendorSocialMedia: (id) => api.get(`/vendor/${id}/social-media`),
   addSocialMediaLink: (id, platform, link) =>
     api.post(`/vendor/${id}/social-media`, null, {
@@ -78,12 +81,16 @@ export const weddingService = {
 
   getWeddingById: (id) => api.get(`/wedding/${id}`),
 
-  createWedding: (weddingData) => api.post("/wedding", weddingData),
+  createWedding: (weddingData) => {
+    console.log('Creating wedding with data:', weddingData);
+    // Send the wedding data directly without wrapping it
+    return api.post("/wedding/profile", weddingData);
+  },
 
-  createWeddingProfile: (profileData) =>
-    api.post("/wedding/profile", profileData),
-
-  updateWedding: (id, weddingData) => api.put(`/wedding/${id}`, weddingData),
+  updateWedding: (id, weddingData) => {
+    console.log(`Updating wedding ${id} with data:`, weddingData);
+    return api.put(`/wedding/${id}`, weddingData);
+  },
 
   deleteWedding: (id) => api.delete(`/wedding/${id}`),
 };

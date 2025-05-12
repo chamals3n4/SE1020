@@ -2,6 +2,7 @@ package com.se1020.backend.repository;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.se1020.backend.model.Wedding;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +14,8 @@ import java.util.List;
 @Repository
 public class WeddingRepository {
     private static final String FILE_PATH = "src/main/resources/data/weddings.json";
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final File file = new File(FILE_PATH);
 
     public List<Wedding> findAll() throws IOException {
@@ -42,8 +44,14 @@ public class WeddingRepository {
 
     public void save(Wedding wedding) throws IOException {
         List<Wedding> weddings = findAll();
-        weddings.add(wedding);
-        objectMapper.writeValue(file, weddings);
+        // Check if wedding already exists
+        boolean exists = weddings.stream()
+                .anyMatch(w -> w.getWeddingId().equals(wedding.getWeddingId()));
+        
+        if (!exists) {
+            weddings.add(wedding);
+            objectMapper.writeValue(file, weddings);
+        }
     }
 
     public void update(Wedding wedding) throws IOException {

@@ -11,32 +11,43 @@ import java.util.Map;
 public class Vendor extends User {
     private VendorType vendorType;
     private String businessName;
-    private double rating;
-    private List<String> availability; // For simplicity, use List<String> for dates
+    private double rating = 0.0;
+    private List<String> availability = new ArrayList<>(); // For simplicity, use List<String> for dates
     
     // Admin approval management
     private boolean isApproved = false;
     private boolean isRejected = false;
-    private String rejectionReason;
+    private String rejectionReason = "";
     private LocalDateTime approvalDate;
     private LocalDateTime rejectionDate;
-    private String category; // Simple category string for admin dashboard
+    private String category = ""; // Simple category string for admin dashboard
     
     // Portfolio management
     private List<PortfolioItem> portfolioItems = new ArrayList<>();
+    private List<String> imageUrls = new ArrayList<>(); // For storing Supabase image URLs
     
     // Service packages/pricing tiers
     private List<ServicePackage> servicePackages = new ArrayList<>();
     
     // Geographic location/service area
-    private String address;
-    private String city;
-    private String state;
-    private String zipCode;
-    private double serviceRadius; // in kilometers
+    private String address = "";
+    private String city = "";
+    private String state = "";
+    private String zipCode = "";
+    private double serviceRadius = 0.0; // in kilometers
     
     // Social media links
     private Map<SocialMediaPlatform, String> socialMediaLinks = new HashMap<>();
+    
+    // Constructor to ensure all collections are initialized
+    public Vendor() {
+        super();
+        this.portfolioItems = new ArrayList<>();
+        this.servicePackages = new ArrayList<>();
+        this.availability = new ArrayList<>();
+        this.imageUrls = new ArrayList<>();
+        this.socialMediaLinks = new HashMap<>();
+    }
 
     public VendorType getVendorType() {
         return vendorType;
@@ -217,9 +228,17 @@ public class Vendor extends User {
     public Map<SocialMediaPlatform, String> getSocialMediaLinks() {
         return socialMediaLinks;
     }
-    
+
     public void setSocialMediaLinks(Map<SocialMediaPlatform, String> socialMediaLinks) {
         this.socialMediaLinks = socialMediaLinks;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
     
     public void addSocialMediaLink(SocialMediaPlatform platform, String link) {

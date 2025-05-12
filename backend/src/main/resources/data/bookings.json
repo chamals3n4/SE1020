@@ -1,17 +1,1 @@
-[
-  {
-    "bookingId": "booking-1746873090878",
-    "coupleId": "couple-1746787562014",
-    "vendorId": "vendor-1746872983571",
-    "serviceId": "package-vendor-1746872983571-default",
-    "date": 1746835200000,
-    "status": "CONFIRMED",
-    "totalCost": 1000.0,
-    "paymentStatus": null,
-    "amountPaid": 0.0,
-    "remainingBalance": 1000.0,
-    "lastPaymentDate": null,
-    "paymentMethod": null,
-    "transactionId": null
-  }
-]
+[]
