@@ -204,12 +204,13 @@ function CoupleRegistration() {
         // Wedding details
         budget: parseFloat(formData.budget) || 0,
         weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
-        weddingId: apiResponse?.weddingId || weddingId,
+        weddingId: weddingResponse.data.weddingId || weddingId, // Use the wedding ID from the API response
         style: formData.style || "",
         // Timestamps
         createdAt: new Date().toISOString(),
       };
 
+      console.log('Storing user data in localStorage:', userData);
       await register(userData, "couple");
 
       // Registration and auto-login successful, navigate to dashboard

@@ -47,6 +47,12 @@ import {
 import { taskService, coupleService } from "@/services/api";
 import { useNavigate } from "react-router-dom";
 import { format, isAfter, isBefore, isToday } from "date-fns";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 
 function CoupleTasks() {
   const [tasks, setTasks] = useState([]);
@@ -463,106 +469,86 @@ function CoupleTasks() {
         </Dialog>
       </div>
 
-      {/* Filters and Sort Section */}
-      <div className="flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter tasks" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Tasks</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-              <SelectItem value="INCOMPLETE">Incomplete</SelectItem>
-              <SelectItem value="OVERDUE">Overdue</SelectItem>
-              <SelectItem value="TODAY">Due Today</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <SortAsc className="h-4 w-4 text-gray-500" />
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="DUE_DATE">Due Date</SelectItem>
-              <SelectItem value="PRIORITY">Priority</SelectItem>
-              <SelectItem value="NAME">Name</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {/* Tasks Bar List */}
-      <div className="w-full max-w-3xl mx-auto divide-y divide-gray-200 bg-white rounded-xl shadow-sm">
-        {getFilteredAndSortedTasks().map((task) => (
-          <div
-            key={task.taskId}
-            className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-3 transition-all duration-150 hover:bg-violet-50 group ${
-              task.isCompleted ? "opacity-70" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Checkbox
-                id={`task-${task.taskId}`}
-                checked={task.isCompleted}
-                onCheckedChange={() => handleToggleTaskCompletion(task.taskId)}
-                className="h-5 w-5 flex-shrink-0"
-              />
-              <span
-                className={`font-semibold text-base truncate ${
-                  task.isCompleted
-                    ? "line-through text-gray-400"
-                    : "text-gray-900"
-                }`}
-                title={task.name}
+      <div className="w-full border border-gray-200 bg-white rounded-lg">
+        <Accordion type="single" collapsible>
+          {getFilteredAndSortedTasks().map((task, idx) => (
+            <AccordionItem
+              value={task.taskId}
+              key={task.taskId}
+              className={`border-b border-gray-200 ${
+                idx === getFilteredAndSortedTasks().length - 1
+                  ? "border-b-0"
+                  : ""
+              }`}
+            >
+              <div
+                className={
+                  "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-4 py-3" +
+                  (task.isCompleted ? " opacity-70" : "")
+                }
               >
-                {task.name}
-              </span>
-              {getPriorityBadge(task.priority)}
-              {getDueDateBadge(task.dueDate)}
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
-              <span
-                className="text-sm text-gray-600 truncate"
-                title={task.description}
-              >
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <Checkbox
+                    id={`task-${task.taskId}`}
+                    checked={task.isCompleted}
+                    onCheckedChange={() =>
+                      handleToggleTaskCompletion(task.taskId)
+                    }
+                    className="h-5 w-5 flex-shrink-0 mt-1"
+                  />
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <span
+                      className={`font-semibold text-base truncate ${
+                        task.isCompleted
+                          ? "line-through text-gray-400"
+                          : "text-gray-900"
+                      }`}
+                      title={task.name}
+                    >
+                      {task.name}
+                    </span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="flex items-center text-xs text-gray-400">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {format(new Date(task.dueDate), "MMM dd, yyyy")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-violet-100"
+                    onClick={() => {
+                      setEditingTask({ ...task });
+                      setIsEditDialogOpen(true);
+                    }}
+                    aria-label="Edit"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                    onClick={() => handleDeleteTask(task.taskId)}
+                    aria-label="Delete"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <AccordionTrigger className="ml-2">Details</AccordionTrigger>
+                </div>
+              </div>
+              <AccordionContent className="bg-gray-50 px-8 py-2 text-sm text-gray-700">
                 {task.description || (
                   <span className="italic text-gray-400">No description</span>
                 )}
-              </span>
-              <span className="flex items-center text-xs text-gray-400">
-                <Calendar className="h-3 w-3 mr-1" />
-                Due: {format(new Date(task.dueDate), "MMM dd, yyyy")}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 ml-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => {
-                  setEditingTask({ ...task });
-                  setIsEditDialogOpen(true);
-                }}
-                aria-label="Edit"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7"
-                onClick={() => handleDeleteTask(task.taskId)}
-                aria-label="Delete"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
 
         {getFilteredAndSortedTasks().length === 0 && (
           <div className="text-center py-12 w-full">

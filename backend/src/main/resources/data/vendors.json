@@ -1,26 +1,23 @@
 [
   {
-    "id": "vendor-1747073732538",
+    "id": "vendor-1747155738582",
     "email": "admin@gmail.com",
     "password": "0000",
-    "name": "Chalk Technologies",
-    "phone": "0712193355",
+    "name": "S3N4 Temp",
+    "phone": "0717119089",
     "role": "VENDOR",
-    "vendorType": "CATERING",
+    "vendorType": "VENUE",
     "rating": 0.0,
     "availability": [],
-    "rejectionReason": "",
-    "category": "",
-    "portfolioItems": [],
-    "imageUrls": [],
+    "imageUrls": [
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747155738582/1747155769889_Screenshot__482_.png",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747155738582/1747155774375_Screenshot__485_.png",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747155738582/1747155775500_Screenshot__491_.png"
+    ],
     "servicePackages": [],
-    "address": "",
-    "city": "",
-    "state": "",
-    "zipCode": "",
-    "serviceRadius": 0.0,
+    "address": "12121",
     "socialMediaLinks": {},
-    "rejected": false,
-    "approved": false
+    "approved": false,
+    "rejected": false
   }
 ]

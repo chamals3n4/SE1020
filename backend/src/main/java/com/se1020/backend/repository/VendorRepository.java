@@ -73,12 +73,8 @@ public class VendorRepository {
             if (vendor.getRating() != 0.0) existingVendor.setRating(vendor.getRating());
             if (vendor.getAvailability() != null) existingVendor.setAvailability(vendor.getAvailability());
             if (vendor.getAddress() != null) existingVendor.setAddress(vendor.getAddress());
-            if (vendor.getCity() != null) existingVendor.setCity(vendor.getCity());
-            if (vendor.getState() != null) existingVendor.setState(vendor.getState());
-            if (vendor.getZipCode() != null) existingVendor.setZipCode(vendor.getZipCode());
-            if (vendor.getServiceRadius() != 0.0) existingVendor.setServiceRadius(vendor.getServiceRadius());
+            if (vendor.getImageUrls() != null) existingVendor.setImageUrls(vendor.getImageUrls());
             if (vendor.getServicePackages() != null) existingVendor.setServicePackages(vendor.getServicePackages());
-            if (vendor.getPortfolioItems() != null) existingVendor.setPortfolioItems(vendor.getPortfolioItems());
             if (vendor.getSocialMediaLinks() != null) existingVendor.setSocialMediaLinks(vendor.getSocialMediaLinks());
             
             // Add updated vendor back to list

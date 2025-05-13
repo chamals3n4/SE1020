@@ -45,8 +45,43 @@ export const AuthProvider = ({ children }) => {
     try {
       let user = null;
       
-      // Attempt to find the user in the file-based storage
-      if (userType === 'vendor') {
+      if (userType === 'couple') {
+        // Fetch all couples from backend
+        try {
+          const response = await fetch('http://localhost:8080/api/couple');
+          if (!response.ok) throw new Error('Failed to fetch couples');
+          
+          const couples = await response.json();
+          // Find the couple with matching email and password
+          const matchedCouple = couples.find(c => c.email === email && c.password === password);
+          
+          if (matchedCouple) {
+            // Fetch wedding data for this couple
+            const weddingResponse = await fetch('http://localhost:8080/api/wedding');
+            if (!weddingResponse.ok) throw new Error('Failed to fetch weddings');
+            
+            const weddings = await weddingResponse.json();
+            const coupleWedding = weddings.find(w => w.coupleId === matchedCouple.id);
+            
+            user = {
+              id: matchedCouple.id,
+              email: matchedCouple.email,
+              name: matchedCouple.name,
+              userType: 'couple',
+              weddingId: coupleWedding ? coupleWedding.weddingId : null,
+              partnerId: matchedCouple.partnerId,
+              phone: matchedCouple.phone,
+              budget: matchedCouple.budget,
+              weddingDate: matchedCouple.weddingDate
+            };
+            
+            console.log('Logged in couple with wedding ID:', user.weddingId);
+          }
+        } catch (error) {
+          console.error('Error during couple login:', error);
+          throw new Error('Unable to connect to the server. Please try again.');
+        }
+      } else if (userType === 'vendor') {
         // Fetch all vendors from backend
         try {
           const response = await fetch('http://localhost:8080/api/vendor');
@@ -71,32 +106,6 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('Error fetching vendors:', error);
-          throw new Error('Unable to connect to the server. Please try again.');
-        }
-      } else if (userType === 'couple') {
-        // Fetch all couples from backend
-        try {
-          const response = await fetch('http://localhost:8080/api/couple');
-          if (!response.ok) throw new Error('Failed to fetch couples');
-          
-          const couples = await response.json();
-          // Find the couple with matching email and password
-          const matchedCouple = couples.find(c => c.email === email && c.password === password);
-          
-          if (matchedCouple) {
-            user = {
-              id: matchedCouple.id,
-              email: matchedCouple.email,
-              name: matchedCouple.name,
-              userType: 'couple',
-              // Include other relevant couple data
-              weddingId: matchedCouple.weddingId,
-              partnerId: matchedCouple.partnerId,
-              phone: matchedCouple.phone
-            };
-          }
-        } catch (error) {
-          console.error('Error fetching couples:', error);
           throw new Error('Unable to connect to the server. Please try again.');
         }
       } else {

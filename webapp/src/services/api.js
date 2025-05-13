@@ -152,17 +152,77 @@ export const bookingService = {
 
 // Task  services
 export const taskService = {
-  getAllTasks: () => api.get("/task"),
+  getAllTasks: async () => {
+    console.log('Fetching all tasks');
+    try {
+      const response = await api.get("/tasks");
+      console.log('Successfully fetched all tasks:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching all tasks:', error);
+      throw error;
+    }
+  },
 
-  getTaskById: (id) => api.get(`/task/${id}`),
+  getTaskById: async (id) => {
+    console.log('Fetching task with ID:', id);
+    try {
+      const response = await api.get(`/tasks/${id}`);
+      console.log('Successfully fetched task:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching task:', error);
+      throw error;
+    }
+  },
 
-  getTasksByWeddingId: (weddingId) => api.get(`/task/wedding/${weddingId}`),
+  getTasksByWeddingId: async (weddingId) => {
+    console.log('Fetching tasks for wedding ID:', weddingId);
+    try {
+      const response = await api.get(`/tasks/wedding/${weddingId}`);
+      console.log('Successfully fetched tasks for wedding:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error fetching tasks for wedding:', error);
+      throw error;
+    }
+  },
 
-  createTask: (taskData) => api.post("/task", taskData),
+  createTask: async (taskData) => {
+    console.log('Creating new task:', taskData);
+    try {
+      const response = await api.post("/tasks", taskData);
+      console.log('Successfully created task:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error creating task:', error);
+      throw error;
+    }
+  },
 
-  updateTask: (id, taskData) => api.put(`/task/${id}`, taskData),
+  updateTask: async (id, taskData) => {
+    console.log('Updating task:', { id, taskData });
+    try {
+      const response = await api.put(`/tasks/${id}`, taskData);
+      console.log('Successfully updated task:', response.data);
+      return response;
+    } catch (error) {
+      console.error('Error updating task:', error);
+      throw error;
+    }
+  },
 
-  deleteTask: (id) => api.delete(`/task/${id}`),
+  deleteTask: async (id) => {
+    console.log('Deleting task with ID:', id);
+    try {
+      const response = await api.delete(`/tasks/${id}`);
+      console.log('Successfully deleted task');
+      return response;
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      throw error;
+    }
+  },
 };
 
 // Review  services

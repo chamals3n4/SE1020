@@ -9,9 +9,12 @@ import java.util.Map;
 
 public class VendorProfileRequest {
     private Vendor vendor;
-    private Location location;
+    private LocationInfo location;
     private Map<SocialMediaPlatform, String> socialMediaLinks;
     private List<ServicePackage> servicePackages;
+
+    public VendorProfileRequest() {
+    }
 
     public Vendor getVendor() {
         return vendor;
@@ -21,11 +24,11 @@ public class VendorProfileRequest {
         this.vendor = vendor;
     }
 
-    public Location getLocation() {
+    public LocationInfo getLocation() {
         return location;
     }
 
-    public void setLocation(Location location) {
+    public void setLocation(LocationInfo location) {
         this.location = location;
     }
 
@@ -45,12 +48,11 @@ public class VendorProfileRequest {
         this.servicePackages = servicePackages;
     }
 
-    public static class Location {
+    public static class LocationInfo {
         private String address;
-        private String city;
-        private String state;
-        private String zipCode;
-        private Double serviceRadius;
+
+        public LocationInfo() {
+        }
 
         public String getAddress() {
             return address;
@@ -58,38 +60,6 @@ public class VendorProfileRequest {
 
         public void setAddress(String address) {
             this.address = address;
-        }
-
-        public String getCity() {
-            return city;
-        }
-
-        public void setCity(String city) {
-            this.city = city;
-        }
-
-        public String getState() {
-            return state;
-        }
-
-        public void setState(String state) {
-            this.state = state;
-        }
-
-        public String getZipCode() {
-            return zipCode;
-        }
-
-        public void setZipCode(String zipCode) {
-            this.zipCode = zipCode;
-        }
-
-        public Double getServiceRadius() {
-            return serviceRadius;
-        }
-
-        public void setServiceRadius(Double serviceRadius) {
-            this.serviceRadius = serviceRadius;
         }
     }
 } 

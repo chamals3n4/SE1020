@@ -305,33 +305,27 @@ function VendorProfile() {
       const newPortfolioImages = [...portfolioImages, ...urls];
       setPortfolioImages(newPortfolioImages);
 
-      // Update the vendor profile with new images while preserving other data
+      // Get current vendor data
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+      
+      // Update the vendor profile with new images
       const updatedVendorData = {
-        ...profileData,
+        ...currentUser,
         id: vendorId,
-        role: "VENDOR",
-        updatedAt: new Date().toISOString(),
-        email: profileData.email,
-        name: profileData.name,
-        phone: profileData.phone,
-        vendorType: profileData.vendorType,
-        businessName: profileData.name,
-        rating: profileData.rating || 0.0,
-        availability: profileData.isAvailable,
-        address: profileData.address,
-        city: profileData.city,
-        state: profileData.state,
-        zipCode: profileData.zip,
-        serviceRadius: profileData.serviceRadius || 0.0,
-        portfolioItems: newPortfolioImages.map((url) => ({ imageUrl: url })),
-        servicePackages: packages,
-        socialMediaLinks: profileData.socialMediaLinks || {},
-        approved: profileData.approved || false,
-        rejected: profileData.rejected || false,
-        imageUrls: newPortfolioImages,
+        imageUrls: newPortfolioImages // Update only the image URLs
       };
 
-      await vendorService.updateVendor(vendorId, updatedVendorData);
+      console.log("Updating vendor with image URLs:", newPortfolioImages);
+
+      // Update vendor data in the backend
+      const response = await vendorService.updateVendor(vendorId, updatedVendorData);
+      console.log("Vendor update response:", response);
+
+      // Update localStorage with the new data
+      localStorage.setItem("currentUser", JSON.stringify({
+        ...currentUser,
+        imageUrls: newPortfolioImages
+      }));
 
       // Clear selected images
       setSelectedImages([]);
@@ -384,16 +378,11 @@ function VendorProfile() {
         rating: profileData.rating || 0.0,
         availability: profileData.isAvailable,
         address: profileData.address,
-        city: profileData.city,
-        state: profileData.state,
-        zipCode: profileData.zip,
-        serviceRadius: profileData.serviceRadius || 0.0,
-        portfolioItems: updatedImages.map((url) => ({ imageUrl: url })),
+        imageUrls: updatedImages,
         servicePackages: packages,
         socialMediaLinks: profileData.socialMediaLinks || {},
         approved: profileData.approved || false,
-        rejected: profileData.rejected || false,
-        imageUrls: updatedImages,
+        rejected: profileData.rejected || false
       };
 
       await vendorService.updateVendor(vendorId, updatedVendorData);

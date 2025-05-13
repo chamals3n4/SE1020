@@ -17,13 +17,10 @@ public class Vendor extends User {
     // Admin approval management
     private boolean isApproved = false;
     private boolean isRejected = false;
-    private String rejectionReason = "";
     private LocalDateTime approvalDate;
     private LocalDateTime rejectionDate;
-    private String category = ""; // Simple category string for admin dashboard
     
     // Portfolio management
-    private List<PortfolioItem> portfolioItems = new ArrayList<>();
     private List<String> imageUrls = new ArrayList<>(); // For storing Supabase image URLs
     
     // Service packages/pricing tiers
@@ -31,10 +28,6 @@ public class Vendor extends User {
     
     // Geographic location/service area
     private String address = "";
-    private String city = "";
-    private String state = "";
-    private String zipCode = "";
-    private double serviceRadius = 0.0; // in kilometers
     
     // Social media links
     private Map<SocialMediaPlatform, String> socialMediaLinks = new HashMap<>();
@@ -42,7 +35,6 @@ public class Vendor extends User {
     // Constructor to ensure all collections are initialized
     public Vendor() {
         super();
-        this.portfolioItems = new ArrayList<>();
         this.servicePackages = new ArrayList<>();
         this.availability = new ArrayList<>();
         this.imageUrls = new ArrayList<>();
@@ -98,14 +90,6 @@ public class Vendor extends User {
         isRejected = rejected;
     }
     
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-    
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
-    
     public LocalDateTime getApprovalDate() {
         return approvalDate;
     }
@@ -122,42 +106,25 @@ public class Vendor extends User {
         this.rejectionDate = rejectionDate;
     }
     
-    public String getCategory() {
-        return category;
-    }
-    
-    public void setCategory(String category) {
-        this.category = category;
-    }
-    
     // Portfolio management methods
-    public List<PortfolioItem> getPortfolioItems() {
-        return portfolioItems;
+    public List<String> getImageUrls() {
+        return imageUrls;
     }
     
-    public void setPortfolioItems(List<PortfolioItem> portfolioItems) {
-        this.portfolioItems = portfolioItems;
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
     
-    public void addPortfolioItem(PortfolioItem item) {
-        if (this.portfolioItems == null) {
-            this.portfolioItems = new ArrayList<>();
+    public void addImageUrl(String url) {
+        if (this.imageUrls == null) {
+            this.imageUrls = new ArrayList<>();
         }
-        this.portfolioItems.add(item);
+        this.imageUrls.add(url);
     }
     
-    public void removePortfolioItem(String itemId) {
-        if (this.portfolioItems != null) {
-            this.portfolioItems.removeIf(item -> item.getId().equals(itemId));
-        }
-    }
-    
-    public void submitPortfolio() {
-        // Implementation for submitting the portfolio
-        System.out.println("Submitting portfolio for " + businessName);
-        // In a real implementation, you might validate and process the portfolio items
-        for (PortfolioItem item : portfolioItems) {
-            System.out.println("- Processing item: " + item.getTitle());
+    public void removeImageUrl(String url) {
+        if (this.imageUrls != null) {
+            this.imageUrls.remove(url);
         }
     }
     
@@ -192,77 +159,12 @@ public class Vendor extends User {
         this.address = address;
     }
     
-    public String getCity() {
-        return city;
-    }
-    
-    public void setCity(String city) {
-        this.city = city;
-    }
-    
-    public String getState() {
-        return state;
-    }
-    
-    public void setState(String state) {
-        this.state = state;
-    }
-    
-    public String getZipCode() {
-        return zipCode;
-    }
-    
-    public void setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-    }
-    
-    public double getServiceRadius() {
-        return serviceRadius;
-    }
-    
-    public void setServiceRadius(double serviceRadius) {
-        this.serviceRadius = serviceRadius;
-    }
-    
     // Social media methods
     public Map<SocialMediaPlatform, String> getSocialMediaLinks() {
         return socialMediaLinks;
     }
-
+    
     public void setSocialMediaLinks(Map<SocialMediaPlatform, String> socialMediaLinks) {
         this.socialMediaLinks = socialMediaLinks;
-    }
-
-    public List<String> getImageUrls() {
-        return imageUrls;
-    }
-
-    public void setImageUrls(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
-    }
-    
-    public void addSocialMediaLink(SocialMediaPlatform platform, String link) {
-        if (this.socialMediaLinks == null) {
-            this.socialMediaLinks = new HashMap<>();
-        }
-        this.socialMediaLinks.put(platform, link);
-    }
-    
-    public String getSocialMediaLink(SocialMediaPlatform platform) {
-        return this.socialMediaLinks.get(platform);
-    }
-    
-    public void removeSocialMediaLink(SocialMediaPlatform platform) {
-        if (this.socialMediaLinks != null) {
-            this.socialMediaLinks.remove(platform);
-        }
-    }
-    
-    public void updateAvailability() {
-        // Implementation for updating availability
-    }
-    
-    public void respondToBooking() {
-        // Implementation for responding to booking
     }
 }

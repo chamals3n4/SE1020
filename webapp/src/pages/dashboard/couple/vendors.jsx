@@ -98,7 +98,7 @@ function FindVendors() {
             avgRating: vendor.avgRating || 0,
             reviewCount: vendor.reviewCount || 0,
             // Initialize empty portfolio images array that will be populated
-            portfolioImages: [],
+            portfolioImages: vendor.imageUrls || [],
           };
         });
 
