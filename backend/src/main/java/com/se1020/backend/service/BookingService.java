@@ -2,6 +2,10 @@ package com.se1020.backend.service;
 
 import com.se1020.backend.model.Booking;
 import com.se1020.backend.repository.BookingRepository;
+import com.se1020.backend.repository.WeddingRepository;
+import com.se1020.backend.repository.VendorRepository;
+import com.se1020.backend.model.Wedding;
+import com.se1020.backend.model.Vendor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +17,10 @@ public class BookingService {
 
     @Autowired
     private BookingRepository bookingRepository;
+    @Autowired
+    private WeddingRepository weddingRepository;
+    @Autowired
+    private VendorRepository vendorRepository;
 
     public List<Booking> getAllBookings() throws IOException {
         return bookingRepository.findAll();
@@ -39,6 +47,21 @@ public class BookingService {
         if (booking != null) {
             booking.confirmBooking();
             updateBooking(booking);
+
+            // If this is a venue booking and confirmed, update the wedding location
+            if ("CONFIRMED".equals(booking.getStatus().name())) {
+                // Fetch the wedding
+                Wedding wedding = weddingRepository.findById(booking.getWeddingId());
+                if (wedding != null) {
+                    // Fetch the vendor (venue)
+                    Vendor vendor = vendorRepository.findById(booking.getVendorId());
+                    if (vendor != null) {
+                        wedding.setLocation(vendor.getName());
+                        wedding.setAddress(vendor.getAddress());
+                        weddingRepository.update(wedding);
+                    }
+                }
+            }
         }
     }
     

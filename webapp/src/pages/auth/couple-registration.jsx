@@ -81,77 +81,44 @@ function CoupleRegistration() {
       const coupleId = `couple-${timestamp}`;
       const weddingId = `wedding-${timestamp}`;
 
-      // Generate a separate ID for each partner to support multiple partners
-      // For now we have one partner, but this approach allows for more partners in the future
-      const partners = [
-        {
-          id: `partner-${timestamp}-1`, // Using numbered IDs for partners
-          email: formData.partnerEmail,
-          password: formData.partnerPassword,
-          firstName: formData.partnerFirstName,
-          lastName: formData.partnerLastName,
-          name: `${formData.partnerFirstName} ${formData.partnerLastName}`,
-          phone: formData.partnerPhone,
-          role: "PARTNER",
-          coupleId: coupleId, // Reference back to the couple
-          weddingId: weddingId, // Reference to the wedding
-          createdAt: new Date().toISOString(),
-        },
-      ];
+      // Create partner object in the format expected by the backend
+      const partner = {
+        id: `user-${timestamp}`,
+        email: formData.partnerEmail,
+        password: formData.partnerPassword,
+        name: `${formData.partnerFirstName} ${formData.partnerLastName}`,
+        phone: formData.partnerPhone,
+        role: "COUPLE" // Changed from PARTNER to COUPLE to match backend
+      };
 
       // First, attempt to save to the backend (if backend is working)
-      const apiData = {
+      const coupleData = {
         id: coupleId,
         email: formData.email,
         password: formData.password,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
         name: `${formData.firstName} ${formData.lastName}`,
         phone: formData.phone,
         role: "COUPLE",
         budget: parseFloat(formData.budget) || 0,
         weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
         style: formData.style || "",
-        weddingId: weddingId,
-        // Store array of partner IDs instead of a single partnerId
-        partnerIds: partners.map((p) => p.id),
-        // Include full partner objects
-        partners: partners,
-        // Created and updated timestamps
+        partnerId: partner.id, // Single partnerId string
+        partner: partner, // Single partner object
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      let apiResponse = null;
+      console.log("Creating couple with data:", coupleData);
 
+      let apiResponse;
       try {
-        // First create the couple
-        const coupleData = {
-          id: coupleId,
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          name: `${formData.firstName} ${formData.lastName}`,
-          phone: formData.phone,
-          role: "COUPLE",
-          budget: parseFloat(formData.budget) || 0,
-          weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
-          style: formData.style || "",
-          partnerIds: partners.map((p) => p.id),
-          partners: partners,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        console.log("Creating couple with data:", coupleData);
-
         // Create couple in backend
         const coupleResponse = await axios.post(
           "http://localhost:8080/api/couple",
           coupleData
         );
         console.log("Couple created successfully:", coupleResponse.data);
+        apiResponse = coupleResponse.data;
 
         // Then create the wedding with the couple's ID
         const weddingData = {
@@ -174,52 +141,41 @@ function CoupleRegistration() {
         );
         console.log("Wedding created successfully:", weddingResponse.data);
 
-        apiResponse = coupleResponse.data;
-      } catch (apiError) {
-        console.error(
-          "API registration failed:",
-          apiError.response?.data || apiError
-        );
-        // Don't continue with local auth if API fails
-        throw new Error(
-          "Failed to register with the server. Please try again."
-        );
+        // Register with our auth context (stores in localStorage)
+        // Use the IDs from API response if available, otherwise use our generated IDs
+        const userData = {
+          id: apiResponse?.id || coupleId,
+          email: formData.email,
+          name: `${formData.firstName} ${formData.lastName}`,
+          phone: formData.phone,
+          role: "COUPLE",
+          // Store partner information in the format expected by the frontend
+          partner: apiResponse?.partner || partner,
+          partnerId: apiResponse?.partnerId || partner.id,
+          // Wedding details
+          budget: parseFloat(formData.budget) || 0,
+          weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
+          weddingId: weddingResponse.data.weddingId || weddingId,
+          style: formData.style || "",
+          // Timestamps
+          createdAt: new Date().toISOString(),
+        };
+
+        console.log('Storing user data in localStorage:', userData);
+        await register(userData, "couple");
+
+        // Registration and auto-login successful, navigate to dashboard
+        navigate("/dashboard/couple");
+      } catch (error) {
+        console.error("Registration failed:", error);
+        alert("Registration failed. Please try again.");
+        throw error;
+      } finally {
+        setIsLoading(false);
       }
-
-      // Register with our auth context (stores in localStorage)
-      // Use the IDs from API response if available, otherwise use our generated IDs
-      const userData = {
-        id: apiResponse?.id || coupleId,
-        email: formData.email,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        name: `${formData.firstName} ${formData.lastName}`,
-        phone: formData.phone,
-        role: "COUPLE",
-        // Support multiple partners in a consistent way
-        partners: apiResponse?.partners || partners,
-        // For backward compatibility with existing code
-        partnerName: `${formData.partnerFirstName} ${formData.partnerLastName}`,
-        partnerId: partners[0].id,
-        // Wedding details
-        budget: parseFloat(formData.budget) || 0,
-        weddingDate: weddingDate ? format(weddingDate, "yyyy-MM-dd") : null,
-        weddingId: weddingResponse.data.weddingId || weddingId, // Use the wedding ID from the API response
-        style: formData.style || "",
-        // Timestamps
-        createdAt: new Date().toISOString(),
-      };
-
-      console.log('Storing user data in localStorage:', userData);
-      await register(userData, "couple");
-
-      // Registration and auto-login successful, navigate to dashboard
-      navigate("/dashboard/couple");
     } catch (error) {
       console.error("Registration failed:", error);
       // You could show an error toast/message here
-    } finally {
-      setIsLoading(false);
     }
   };
 

@@ -206,6 +206,40 @@ function VendorBookings() {
           updateData
         );
         console.log("Successfully confirmed booking:", response.data);
+
+        // If this is a venue booking, update the wedding details
+        if (updateData.vendorType === "VENUE" || updateData.serviceType === "VENUE") {
+          try {
+            // Get vendor details to update wedding location
+            const vendorResponse = await axios.get(
+              `http://localhost:8080/api/vendor/${updateData.vendorId}`
+            );
+            const vendorData = vendorResponse.data;
+
+            // Get wedding details
+            const weddingResponse = await axios.get(
+              `http://localhost:8080/api/wedding/${updateData.weddingId}`
+            );
+            const weddingData = weddingResponse.data;
+
+            // Update wedding with venue information
+            const updatedWedding = {
+              ...weddingData,
+              location: vendorData.name, // Use vendor name as venue name
+              address: vendorData.address || "", // Use vendor address
+            };
+
+            // Save updated wedding details
+            await axios.put(
+              `http://localhost:8080/api/wedding/${updateData.weddingId}`,
+              updatedWedding
+            );
+            console.log("Successfully updated wedding with venue details");
+          } catch (weddingUpdateError) {
+            console.error("Error updating wedding with venue details:", weddingUpdateError);
+            // Don't throw here - we still want the booking to be confirmed
+          }
+        }
       } catch (error) {
         console.error("Confirm via direct PUT failed:", error);
         throw error;

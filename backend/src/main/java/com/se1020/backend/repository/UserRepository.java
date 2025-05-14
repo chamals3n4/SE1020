@@ -34,8 +34,15 @@ public class UserRepository {
 
     public void save(User user) throws IOException {
         List<User> users = findAll();
-        users.add(user);
-        objectMapper.writeValue(file, users);
+        
+        // Check if user already exists
+        boolean exists = users.stream()
+                .anyMatch(u -> u.getId().equals(user.getId()));
+        
+        if (!exists) {
+            users.add(user);
+            objectMapper.writeValue(file, users);
+        }
     }
 
     public void update(User user) throws IOException {

@@ -9,12 +9,14 @@ import {
   Heart,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { taskService } from "@/services/api";
+import { taskService, bookingService, vendorService } from "@/services/api";
 import { format, isAfter, isBefore, isToday } from "date-fns";
 
 function CoupleOverview() {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [vendorBookings, setVendorBookings] = useState([]);
+  const [isBookingsLoading, setIsBookingsLoading] = useState(true);
 
   // Get current user information from localStorage
   const userStr = localStorage.getItem("currentUser");
@@ -25,29 +27,38 @@ function CoupleOverview() {
     const fetchTasks = async () => {
       try {
         if (!weddingId) {
-          console.log('No wedding ID found, skipping task fetch');
+          console.log("No wedding ID found, skipping task fetch");
           setTasks([]);
           setIsLoading(false);
           return;
         }
 
-        console.log('Fetching tasks for wedding ID:', weddingId);
+        console.log("Fetching tasks for wedding ID:", weddingId);
         const response = await taskService.getTasksByWeddingId(weddingId);
         if (response.data && Array.isArray(response.data)) {
-          console.log('Received tasks:', response.data);
+          console.log("Received tasks:", response.data);
           // Sort tasks by due date and get upcoming ones
           const sortedTasks = response.data
-            .filter(task => {
-              const isUpcoming = !task.isCompleted && isAfter(new Date(task.dueDate), new Date());
-              console.log(`Task ${task.name} is ${isUpcoming ? 'upcoming' : 'not upcoming'}`);
+            .filter((task) => {
+              const isUpcoming =
+                !task.isCompleted &&
+                isAfter(new Date(task.dueDate), new Date());
+              console.log(
+                `Task ${task.name} is ${
+                  isUpcoming ? "upcoming" : "not upcoming"
+                }`
+              );
               return isUpcoming;
             })
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
             .slice(0, 5); // Get only the next 5 upcoming tasks
-          console.log('Filtered and sorted tasks:', sortedTasks);
+          console.log("Filtered and sorted tasks:", sortedTasks);
           setTasks(sortedTasks);
         } else {
-          console.warn('No tasks data received or invalid format:', response.data);
+          console.warn(
+            "No tasks data received or invalid format:",
+            response.data
+          );
           setTasks([]);
         }
       } catch (error) {
@@ -60,6 +71,57 @@ function CoupleOverview() {
 
     fetchTasks();
   }, [weddingId]);
+
+  useEffect(() => {
+    const fetchVendorBookings = async () => {
+      if (!user || !user.id) {
+        setVendorBookings([]);
+        setIsBookingsLoading(false);
+        return;
+      }
+      try {
+        const response = await bookingService.getAllBookings();
+        if (response.data && Array.isArray(response.data)) {
+          // Filter bookings for this couple/wedding
+          const coupleBookings = response.data.filter(
+            (booking) => booking.coupleId === user.id
+          );
+          // Fetch vendor details for each booking
+          const bookingsWithVendor = await Promise.all(
+            coupleBookings.map(async (booking) => {
+              try {
+                const vendorRes = await vendorService.getVendorById(
+                  booking.vendorId
+                );
+                return {
+                  ...booking,
+                  vendorName: vendorRes.data?.name || "Unknown Vendor",
+                  vendorType: vendorRes.data?.vendorType || "Vendor",
+                  status: booking.status || "Unknown",
+                };
+              } catch {
+                return {
+                  ...booking,
+                  vendorName: "Unknown Vendor",
+                  vendorType: "Vendor",
+                  status: booking.status || "Unknown",
+                };
+              }
+            })
+          );
+          setVendorBookings(bookingsWithVendor.slice(0, 6)); // Show up to 6
+        } else {
+          setVendorBookings([]);
+        }
+      } catch (error) {
+        setVendorBookings([]);
+      } finally {
+        setIsBookingsLoading(false);
+      }
+    };
+
+    fetchVendorBookings();
+  }, [user]);
 
   return (
     <div className="space-y-6">
@@ -147,29 +209,6 @@ function CoupleOverview() {
         </Card>
       </div>
 
-      <div className="border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">Wedding Timeline</h2>
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              Last 3 months
-            </Button>
-            <Button variant="outline" size="sm">
-              Last 30 days
-            </Button>
-            <Button variant="outline" size="sm">
-              Last 7 days
-            </Button>
-          </div>
-        </div>
-
-        <div className="h-[300px] flex items-center justify-center bg-gray-50 rounded-md">
-          <p className="text-muted-foreground">
-            Timeline chart will be displayed here
-          </p>
-        </div>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="border shadow-sm">
           <CardHeader>
@@ -225,68 +264,39 @@ function CoupleOverview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                {
-                  type: "Venue",
-                  name: "Grand Ballroom",
-                  status: "Confirmed",
-                  icon: Users,
-                },
-                {
-                  type: "Photographer",
-                  name: "Elegant Events Photography",
-                  status: "Confirmed",
-                  icon: Heart,
-                },
-                {
-                  type: "Caterer",
-                  name: "Gourmet Delights",
-                  status: "Confirmed",
-                  icon: Calendar,
-                },
-                {
-                  type: "DJ",
-                  name: "Rhythm Masters",
-                  status: "Confirmed",
-                  icon: Users,
-                },
-                {
-                  type: "Florist",
-                  name: "Blooming Creations",
-                  status: "Confirmed",
-                  icon: Heart,
-                },
-                {
-                  type: "Cake",
-                  name: "",
-                  status: "Not Booked",
-                  icon: Calendar,
-                },
-              ].map((vendor, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-center">
-                    <vendor.icon className="h-4 w-4 mr-2 text-gray-500" />
+              {isBookingsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-violet-500"></div>
+                </div>
+              ) : vendorBookings.length > 0 ? (
+                vendorBookings.map((booking, idx) => (
+                  <div
+                    key={booking.bookingId || idx}
+                    className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
+                  >
                     <div>
-                      <p className="font-medium">{vendor.type}</p>
+                      <p className="font-medium">{booking.vendorType}</p>
                       <p className="text-sm text-muted-foreground">
-                        {vendor.name || "Not selected yet"}
+                        {booking.vendorName}
                       </p>
                     </div>
+                    <div
+                      className={`text-sm px-2 py-1 rounded-full ${
+                        booking.status === "CONFIRMED"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {booking.status.charAt(0) +
+                        booking.status.slice(1).toLowerCase()}
+                    </div>
                   </div>
-                  <div
-                    className={`text-sm px-2 py-1 rounded-full ${
-                      vendor.status === "Confirmed"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {vendor.status}
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-muted-foreground">
+                  No vendor bookings yet
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
