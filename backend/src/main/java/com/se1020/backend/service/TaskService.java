@@ -1,7 +1,7 @@
 package com.se1020.backend.service;
 
 import com.se1020.backend.model.Task;
-import com.se1020.backend.model.TaskList;
+import com.se1020.backend.util.TaskList;
 import com.se1020.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import supabase from "@/config/supabase";
-import { AlertCircle } from "lucide-react";
-import axios from "axios";
+import {
+  AlertCircle,
+  Star,
+  MapPin,
+  Phone,
+  Calendar,
+  ImageIcon,
+  ArrowUpDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -15,37 +20,27 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTrigger,
   DialogDescription,
+  DialogTitle,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
 
 import {
-  Search,
-  Star,
-  MapPin,
-  Phone,
-  Heart,
-  Calendar,
-  Filter,
-  ImageIcon,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 import {
   Carousel,
   CarouselContent,
@@ -53,187 +48,80 @@ import {
   CarouselPrevious,
   CarouselNext,
 } from "@/components/ui/carousel";
-import { vendorService, bookingService } from "@/services/api";
+import { Badge } from "@/components/ui/badge";
+import { vendorService, bookingService, reviewService } from "@/services/api";
 
 function FindVendors() {
   const navigate = useNavigate();
   const [vendors, setVendors] = useState([]);
-  const [filteredVendors, setFilteredVendors] = useState([]);
-  const [fetchError, setFetchError] = useState(null);
-  const [imageLoadingStatus, setImageLoadingStatus] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [vendorType, setVendorType] = useState("");
-  const [priceRange, setPriceRange] = useState("");
-  const [sortBy, setSortBy] = useState("rating");
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
 
   // Fetch vendors on component mount
   useEffect(() => {
     const fetchVendors = async () => {
       try {
-        // Check if we have any recently updated vendor data in localStorage (for development/testing)
-        const lastUpdatedVendorData = localStorage.getItem(
-          "lastUpdatedVendorData"
-        );
-
-        const response = await vendorService.getAllVendors();
+        // Get sorted vendors from backend
+        const response = await vendorService.getVendorsSortedByPrice(sortOrder === 'asc');
         let vendorsData = response.data;
 
+        // Filter for approved vendors only
+        vendorsData = vendorsData.filter(vendor => vendor.status === "APPROVED");
+
         // Process the vendors first before fetching images
-        const processedVendors = vendorsData.map((vendor) => {
-          return {
-            ...vendor,
-            // Calculate min/max price from service packages if available
-            minPrice:
-              vendor.servicePackages && vendor.servicePackages.length > 0
-                ? Math.min(...vendor.servicePackages.map((pkg) => pkg.price))
-                : 0,
-            maxPrice:
-              vendor.servicePackages && vendor.servicePackages.length > 0
-                ? Math.max(...vendor.servicePackages.map((pkg) => pkg.price))
-                : 0,
-            // Use default values for any missing fields
-            avgRating: vendor.avgRating || 0,
-            reviewCount: vendor.reviewCount || 0,
-            // Initialize empty portfolio images array that will be populated
-            portfolioImages: vendor.imageUrls || [],
-          };
-        });
-
-        // Set vendors with basic info first so UI can render
-        setVendors(processedVendors);
-        setFilteredVendors(processedVendors);
-
-        // Then fetch images for each vendor from Supabase
-        const fetchVendorImages = async () => {
-          try {
-            // For each vendor, list their images
-            const updatedVendors = await Promise.all(
-              processedVendors.map(async (vendor) => {
-                try {
-                  const { data, error } = await supabase.storage
-                    .from("images")
-                    .list(`vendors/${vendor.id}`);
-                  console.log(`Files in vendors/${vendor.id}:`, data);
-
-                  let portfolioImages = [];
-                  if (data && data.length > 0) {
-                    portfolioImages = data
-                      .filter(file => file.name) // Only files, not folders
-                      .map(file => {
-                        const { data: publicUrlData } = supabase.storage
-                          .from("images")
-                          .getPublicUrl(`vendors/${vendor.id}/${file.name}`);
-                        return publicUrlData.publicUrl;
-                      });
-                  }
-                  return { ...vendor, portfolioImages };
-                } catch (err) {
-                  console.error(`Error processing images for vendor ${vendor.id}:`, err);
-                  return { ...vendor, portfolioImages: [] };
-                }
-              })
-            );
-
-            setVendors(updatedVendors);
-            setFilteredVendors(updatedVendors);
-          } catch (err) {
-            console.error("Error fetching vendor images:", err);
-            setFetchError(`Error fetching vendor images: ${err.message}`);
-          }
-        };
-
-        fetchVendorImages();
-
-        // Keep the old fallback method for existing portfolio items
-        // This ensures backward compatibility with existing data
-        for (const vendor of processedVendors) {
-          if (vendor.portfolioItems && vendor.portfolioItems.length > 0) {
-            vendor.portfolioItems.forEach((item) => {
-              if (item.imageUrls && item.imageUrls.length > 0) {
-                vendor.portfolioImages.push(...item.imageUrls);
+        const processedVendors = await Promise.all(
+          vendorsData.map(async (vendor) => {
+            // Fetch reviews for this vendor
+            let avgRating = 0;
+            let reviewCount = 0;
+            let reviews = [];
+            try {
+              reviews = (await reviewService.getReviewsByVendorId(vendor.id)) || [];
+              vendor.reviews = reviews;
+              if (reviews.length > 0) {
+                const totalRating = reviews.reduce(
+                  (sum, review) => sum + review.rating,
+                  0
+                );
+                avgRating = totalRating / reviews.length;
+                reviewCount = reviews.length;
               }
-            });
-          }
-        }
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching vendors:", error);
-        setVendors([]);
-        setFilteredVendors([]);
-        toast("Error", {
-          description: "Unable to fetch vendors. Please try again later.",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
+            } catch (error) {
+              console.error(`Failed to fetch reviews for vendor ${vendor.id}:`, error);
+            }
+
+            return {
+              ...vendor,
+              type: vendor.vendorType || "Unknown Type",
+              minPrice: vendor.basePrice || 0,
+              maxPrice: vendor.basePrice || 0,
+              avgRating,
+              reviewCount,
+              reviews,
+              portfolioImages: vendor.imageUrls || [],
+            };
+          })
+        );
+
+        // Filter by price range
+        const filteredVendors = processedVendors.filter(vendor => {
+          const price = vendor.basePrice || 0;
+          return price >= priceRange.min && price <= priceRange.max;
         });
+
+        setVendors(filteredVendors);
+      } catch (error) {
+        console.error("Error in fetchVendors:", error);
+      } finally {
         setIsLoading(false);
       }
     };
 
     fetchVendors();
-  }, []);
-
-  // Apply filters whenever search params change
-  useEffect(() => {
-    let results = [...vendors];
-
-    // Apply text search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(
-        (vendor) =>
-          vendor.name.toLowerCase().includes(query) ||
-          vendor.description.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply vendor type filter
-    if (vendorType) {
-      results = results.filter((vendor) => vendor.type === vendorType);
-    }
-
-    // Apply price range filter
-    if (priceRange) {
-      switch (priceRange) {
-        case "budget":
-          results = results.filter((vendor) => vendor.minPrice < 1000);
-          break;
-        case "moderate":
-          results = results.filter(
-            (vendor) => vendor.minPrice >= 1000 && vendor.minPrice < 3000
-          );
-          break;
-        case "premium":
-          results = results.filter((vendor) => vendor.minPrice >= 3000);
-          break;
-      }
-    }
-
-    // Apply sorting
-    if (sortBy === "rating") {
-      results.sort((a, b) => b.avgRating - a.avgRating);
-    } else if (sortBy === "price_low") {
-      results.sort((a, b) => a.minPrice - b.minPrice);
-    } else if (sortBy === "price_high") {
-      results.sort((a, b) => b.minPrice - a.minPrice);
-    }
-
-    setFilteredVendors(results);
-  }, [vendors, searchQuery, vendorType, priceRange, sortBy]);
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const resetFilters = () => {
-    setSearchQuery("");
-    setVendorType("all_types");
-    setPriceRange("any_price");
-    setSortBy("rating");
-  };
+  }, [sortOrder, priceRange]); // Re-fetch when sort order or price range changes
 
   const bookVendor = async (vendorId) => {
     // First, get vendor details to include in booking
@@ -243,47 +131,26 @@ function FindVendors() {
       vendorDetails = vendorResponse.data || {};
     } catch (error) {
       console.error("Error fetching vendor details for booking:", error);
-      // Continue with limited vendor info
-      const vendor = filteredVendors.find((v) => v.id === vendorId) || {};
+      const vendor = vendors.find((v) => v.id === vendorId) || {};
       vendorDetails = vendor;
     }
 
-    // Try to get user data from multiple possible localStorage keys
-    // The app might be using different keys for historical reasons
+    // Get user data from localStorage
     let userStr = localStorage.getItem("user");
-
-    // If not found with "user" key, try "currentUser" as fallback
     if (!userStr) {
       const currentUserStr = localStorage.getItem("currentUser");
       if (currentUserStr) {
         userStr = currentUserStr;
-        console.log(
-          "User found in 'currentUser' localStorage key instead of 'user'"
-        );
       }
     }
 
-    // Check if we found the user in any storage location
     if (!userStr) {
       alert("You must be logged in to book a vendor");
       return;
     }
 
-    // Parse the user data
     const user = JSON.parse(userStr);
 
-    // Log the user data for debugging
-    console.log("User data found:", {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      storage:
-        userStr === localStorage.getItem("currentUser")
-          ? "currentUser"
-          : "user",
-    });
-
-    // Ensure we have the couple ID
     if (!user.id) {
       alert("User information is incomplete. Please log in again.");
       return;
@@ -298,45 +165,32 @@ function FindVendors() {
       vendorDetails.servicePackages &&
       vendorDetails.servicePackages.length > 0
     ) {
-      // Use the first package for quick booking
       const selectedPackage = vendorDetails.servicePackages[0];
       packagePrice = selectedPackage.price || 1000;
       packageId = selectedPackage.id || `package-${vendorId}-1`;
       packageName = selectedPackage.name || "Standard Package";
     } else {
-      // Use minPrice as fallback
       packagePrice = vendorDetails.minPrice || 1000;
       packageId = `package-${vendorId}-default`;
       packageName = "Standard Package";
     }
 
-    // Create consistent IDs
     const timestamp = Date.now();
     const bookingId = `booking-${timestamp}`;
 
-    // Create a booking object that matches backend expected format
     const newBooking = {
-      // Use consistent ID format
-      id: bookingId, // Primary identifier
-      bookingId: bookingId, // For backward compatibility if needed
-
-      // Relationship fields
+      id: bookingId,
+      bookingId: bookingId,
       vendorId: vendorId,
       coupleId: user.id,
-      weddingId: user.weddingId || null, // Link to wedding if it exists
-
-      // Package details
+      weddingId: user.weddingId || null,
       serviceId: packageId,
       packageName: packageName,
       packagePrice: packagePrice,
-
-      // Booking details
-      date: new Date().toISOString().split("T")[0], // Today's date as YYYY-MM-DD
+      date: new Date().toISOString().split("T")[0],
       time: "10:00",
-      status: "REQUESTED", // Use uppercase enum value expected by backend
+      status: "REQUESTED",
       totalCost: packagePrice,
-
-      // Additional info for display
       coupleNames: user.name || "Couple",
       vendorName: vendorDetails.name || "Vendor",
       notes: `Booking request for ${packageName} package`,
@@ -344,7 +198,6 @@ function FindVendors() {
     };
 
     try {
-      // Validate crucial fields before sending
       if (
         !newBooking.vendorId ||
         !newBooking.coupleId ||
@@ -359,36 +212,15 @@ function FindVendors() {
         return;
       }
 
-      // Double-check that the ID is not undefined
-      if (
-        newBooking.bookingId === "undefined" ||
-        newBooking.id === "undefined"
-      ) {
-        console.error("Invalid booking ID detected. Fixing...");
-        const fixedId = `booking-${Date.now()}-${Math.floor(
-          Math.random() * 1000
-        )}`;
-        newBooking.id = fixedId;
-        newBooking.bookingId = fixedId;
-      }
-
-      // Save to backend API with validated data
-      console.log("Sending VALIDATED booking to API:", newBooking);
-
-      // Make a direct call to the bookingService
       const backendResponse = await bookingService.createBooking(newBooking);
-
       console.log(
         "Booking created successfully:",
         backendResponse.data || newBooking
       );
 
-      // Show success message
       alert(
         "Booking request sent successfully! Check your bookings page for status."
       );
-
-      // Navigate to bookings page
       navigate("/dashboard/couple/bookings");
     } catch (error) {
       console.error("Error creating booking:", error);
@@ -396,384 +228,233 @@ function FindVendors() {
     }
   };
 
-  const viewVendorDetails = (vendor) => {
-    setSelectedVendor(vendor);
-    setOpenDialog(true);
-  };
-
-  const renderRatingStars = (rating) => {
-    return (
-      <div className="flex items-center">
-        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-        <span className="ml-1 text-sm font-medium">{rating.toFixed(1)}</span>
-        <span className="ml-1 text-xs text-muted-foreground">
-          ({rating.toFixed(1)}/5)
-        </span>
-      </div>
-    );
-  };
-
   if (isLoading) {
     return <div className="py-10 text-center">Loading vendors...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Find Vendors</h1>
-        <p className="text-muted-foreground">
-          Discover the perfect vendors for your special day
-        </p>
+    <div className="container mx-auto px-4 py-8">
+      {/* Add sorting and filtering controls */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            className="flex items-center gap-2"
+          >
+            <ArrowUpDown className="w-4 h-4" />
+            Sort by Price {sortOrder === 'asc' ? '↑' : '↓'}
+          </Button>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="minPrice">Min Price (LKR):</Label>
+            <Input
+              id="minPrice"
+              type="number"
+              value={priceRange.min}
+              onChange={(e) => setPriceRange(prev => ({ ...prev, min: Number(e.target.value) }))}
+              className="w-24"
+              min="0"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="maxPrice">Max Price (LKR):</Label>
+            <Input
+              id="maxPrice"
+              type="number"
+              value={priceRange.max}
+              onChange={(e) => setPriceRange(prev => ({ ...prev, max: Number(e.target.value) }))}
+              className="w-24"
+              min="0"
+            />
+          </div>
+        </div>
+      </div>
 
-        {/* Error Message */}
-        {fetchError && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4 my-4">
-            <div className="flex">
-              <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-              <div>
-                <h3 className="text-sm font-medium text-red-800">
-                  Error Loading Images
-                </h3>
-                <p className="text-sm text-red-700">{fetchError}</p>
-                <p className="text-sm text-red-700 mt-2">
-                  <strong>Possible fixes:</strong> Ensure your Supabase RLS
-                  policies are correctly set up. Your bucket should have a
-                  policy allowing public read access.
-                </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {vendors.map((vendor) => (
+          <Card key={vendor.id} className="overflow-hidden">
+            <CardHeader className="space-y-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold">
+                  {vendor.name}
+                </CardTitle>
+                <Badge variant="secondary" className="font-medium">
+                  {vendor.type}
+                </Badge>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search vendors..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Select value={vendorType} onValueChange={setVendorType}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Vendor type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all_types">All Types</SelectItem>
-              <SelectItem value="PHOTOGRAPHY">Photography</SelectItem>
-              <SelectItem value="VIDEOGRAPHY">Videography</SelectItem>
-              <SelectItem value="CATERING">Catering</SelectItem>
-              <SelectItem value="FLORIST">Florist</SelectItem>
-              <SelectItem value="VENUE">Venue</SelectItem>
-              <SelectItem value="PLANNER">Planner</SelectItem>
-              <SelectItem value="MUSIC">Music</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={priceRange} onValueChange={setPriceRange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Price range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any_price">Any Price</SelectItem>
-              <SelectItem value="budget">Budget (Under $1000)</SelectItem>
-              <SelectItem value="moderate">Moderate ($1000-$3000)</SelectItem>
-              <SelectItem value="premium">Premium ($3000+)</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-              <SelectItem value="price_low">Price (Low to High)</SelectItem>
-              <SelectItem value="price_high">Price (High to Low)</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Button variant="outline" onClick={resetFilters} className="gap-1">
-            <Filter className="h-4 w-4" />
-            Reset
-          </Button>
-        </div>
-      </div>
-
-      {filteredVendors.length === 0 ? (
-        <div className="text-center py-10">
-          <h3 className="text-lg font-medium">No vendors found</h3>
-          <p className="text-muted-foreground mt-2">
-            Try adjusting your filters or search terms
-          </p>
-          <Button variant="outline" onClick={resetFilters} className="mt-4">
-            Reset Filters
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {filteredVendors.map((vendor, index) => {
-              return (
-                <div
-                  key={vendor.id || `vendor-${index}`}
-                  className="group rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300"
-                >
-                  {/* Display carousel of vendor images */}
-                  <div className="relative aspect-video bg-muted">
-                    {console.log(
-                      `Rendering vendor card for ${vendor.id}:`,
-                      vendor
-                    )}
-                    {console.log(
-                      `Portfolio images for ${vendor.id}:`,
-                      vendor.portfolioImages
-                    )}
-
-                    {vendor.portfolioImages &&
-                    vendor.portfolioImages.length > 0 ? (
-                      <Carousel className="w-full">
-                        <CarouselContent>
-                          {vendor.portfolioImages.map((imageUrl, index) => {
-                            console.log(`Rendering image ${index} for vendor ${vendor.id}:`, imageUrl);
-                            return (
-                              <CarouselItem key={`${vendor.id}-image-${index}`}>
-                                <div className="relative h-48 w-full">
-                                  <img
-                                    src={imageUrl}
-                                    alt={`${vendor.name} portfolio ${index + 1}`}
-                                    className="object-cover w-full h-full rounded-t-lg"
-                                    onError={(e) => {
-                                      console.error(
-                                        `Failed to load image ${index} for ${vendor.name}:`,
-                                        imageUrl
-                                      );
-                                      e.target.src = "https://placehold.co/600x400?text=Image+Not+Found";
-                                    }}
-                                  />
-                                </div>
-                              </CarouselItem>
-                            );
-                          })}
-                        </CarouselContent>
-                        <CarouselPrevious className="left-2" />
-                        <CarouselNext className="right-2" />
-                      </Carousel>
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-48 bg-muted rounded-t-lg">
-                        <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 space-y-2">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium text-lg">{vendor.name}</h3>
-                      <div className="flex items-center">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="text-sm ml-1 font-medium">
-                          {vendor.avgRating.toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4 inline mr-1" />
-                      {vendor.city}, {vendor.state}
-                    </p>
-
-                    <p className="text-sm line-clamp-2">{vendor.description}</p>
-
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="text-base font-medium">
-                        ${vendor.minPrice.toLocaleString()} - $
-                        {vendor.maxPrice.toLocaleString()}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => viewVendorDetails(vendor)}
-                          variant="outline"
-                          className="px-3 py-2"
-                        >
-                          Details
-                        </Button>
-                        <Button
-                          onClick={() => bookVendor(vendor.id)}
-                          className="px-3 py-2"
-                        >
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Book
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                  <span className="ml-1 font-medium">
+                    {vendor.avgRating.toFixed(1)}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <span className="text-muted-foreground">
+                  ({vendor.reviewCount} reviews)
+                </span>
+              </div>
+            </CardHeader>
 
-          {/* Vendor Details Dialog */}
-          {openDialog && selectedVendor && (
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl">
-                    {selectedVendor.name}
-                  </DialogTitle>
-                  <DialogDescription>
-                    {selectedVendor.type && (
-                      <Badge variant="secondary" className="mr-2 text-sm">
-                        {selectedVendor.type.replace("_", " ")}
-                      </Badge>
-                    )}
-                    <span className="flex items-center mt-2">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {selectedVendor.city}, {selectedVendor.state}
-                    </span>
-                  </DialogDescription>
-                </DialogHeader>
-
-                {/* Vendor Images */}
-                <div className="mt-4">
-                  <Carousel className="w-full">
+            <CardContent className="space-y-4">
+              {/* Image Gallery */}
+              <div className="aspect-[16/9] relative rounded-md overflow-hidden bg-muted">
+                {vendor.portfolioImages && vendor.portfolioImages.length > 0 ? (
+                  <Carousel className="w-full h-full">
                     <CarouselContent>
-                      {selectedVendor.portfolioImages &&
-                      selectedVendor.portfolioImages.length > 0 ? (
-                        selectedVendor.portfolioImages.map(
-                          (imageUrl, imgIndex) => (
-                            <CarouselItem key={`detail-img-${imgIndex}`}>
-                              <div className="h-80 w-full relative rounded-lg overflow-hidden">
-                                <img
-                                  src={imageUrl}
-                                  alt={`${selectedVendor.name} - image ${
-                                    imgIndex + 1
-                                  }`}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-                            </CarouselItem>
-                          )
-                        )
-                      ) : (
-                        <CarouselItem>
-                          <div className="h-80 w-full flex items-center justify-center bg-muted rounded-lg">
-                            <ImageIcon className="h-16 w-16 text-muted-foreground" />
-                          </div>
+                      {vendor.portfolioImages.map((image, index) => (
+                        <CarouselItem key={index}>
+                          <img
+                            src={image}
+                            alt={`${vendor.name}'s portfolio ${index + 1}`}
+                            className="object-cover w-full h-full"
+                          />
                         </CarouselItem>
-                      )}
+                      ))}
                     </CarouselContent>
-                    <CarouselPrevious className="-left-5" />
-                    <CarouselNext className="-right-5" />
+                    <CarouselPrevious className="-left-3" />
+                    <CarouselNext className="-right-3" />
                   </Carousel>
-                </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
 
-                {/* Portfolio Gallery */}
-                {selectedVendor?.portfolioImages &&
-                  selectedVendor.portfolioImages.length > 0 && (
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-3">
-                        Portfolio Gallery
-                      </h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {selectedVendor.portfolioImages.map((url, index) => (
+              {/* Vendor Details */}
+              <div className="grid grid-cols-2">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span>{vendor.address || "Location not specified"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="w-4 h-4" />
+                    <span>{vendor.phone || "Contact not available"}</span>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-sm text-muted-foreground">
+                    Starting from
+                  </span>
+                  <div className="text-lg font-bold">
+                    LKR {(vendor.basePrice || 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex justify-between items-center pt-4 border-t">
+              <div className="space-y-1">
+                <span className="text-sm text-muted-foreground">
+                  Starting from
+                </span>
+                <div className="text-lg font-bold">
+                  LKR {(vendor.basePrice || 0).toLocaleString()}
+                </div>
+              </div>
+
+              <Dialog
+                open={openDialog && selectedVendor?.id === vendor.id}
+                onOpenChange={(open) => {
+                  setOpenDialog(open);
+                  if (!open) setSelectedVendor(null);
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedVendor(vendor)}
+                  >
+                    View Details
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[850px]">
+                  <DialogHeader>
+                    <DialogTitle> {selectedVendor?.name}</DialogTitle>
+                    <DialogDescription>
+                      {selectedVendor?.type}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-center gap-10 mb-6">
+                    {[0, 1, 2].map((i) => (
+                      <div
+                        key={i}
+                        className="w-56 h-40 bg-blue-200 rounded-2xl border-2 border-blue-400 flex items-center justify-center overflow-hidden"
+                      >
+                        {selectedVendor?.portfolioImages?.[i] ? (
+                          <img
+                            src={selectedVendor.portfolioImages[i]}
+                            alt={`${selectedVendor.name} portfolio ${i + 1}`}
+                            className="w-full h-full object-cover rounded-2xl"
+                          />
+                        ) : (
+                          <span className="text-blue-400 text-4xl">+</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold mb-2">Reviews</h3>
+                    {selectedVendor?.reviews?.length > 0 ? (
+                      <div className="max-h-80 overflow-y-auto pr-2">
+                        {selectedVendor.reviews.map((review, idx) => (
                           <div
-                            key={index}
-                            className="rounded-md overflow-hidden"
+                            key={idx}
+                            className="border rounded-lg p-4 bg-muted/30 mb-3 last:mb-0 hover:bg-muted/50 transition-colors"
                           >
-                            <img
-                              src={url}
-                              alt={`${selectedVendor.name} portfolio ${
-                                index + 1
-                              }`}
-                              className="w-full h-40 object-cover hover:scale-105 transition-transform cursor-pointer"
-                              onError={(e) => {
-                                console.error(
-                                  `Failed to load detail image ${index}:`,
-                                  url
-                                );
-                                e.target.src =
-                                  "https://placehold.co/600x400?text=Image+Not+Found";
-                              }}
-                              onClick={() => {
-                                setSelectedImageIndex(index);
-                                setGalleryOpen(true);
-                              }}
-                            />
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">
+                                {review.coupleName || "Anonymous"}
+                              </span>
+                              <div className="flex items-center text-yellow-500">
+                                <Star className="w-4 h-4 mr-1" />
+                                <span>{review.rating}</span>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {review.reviewDate
+                                ? new Date(
+                                    review.reviewDate
+                                  ).toLocaleDateString()
+                                : ""}
+                            </p>
+                            <p className="text-sm leading-relaxed mt-2 line-clamp-3">
+                              {review.comment}
+                            </p>
+                            {review.comment.length > 150 && (
+                              <button className="text-xs text-blue-500 mt-1 hover:underline">
+                                Read more
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
-                    </div>
-                  )}
-
-                {/* Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                  <div>
-                    <h3 className="text-lg font-medium mb-2">
-                      About this vendor
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedVendor.description ||
-                        "No description available."}
-                    </p>
-
-                    <div className="mt-4">
-                      <h4 className="font-medium mb-1">Rating & Reviews</h4>
-                      <div className="flex items-center">
-                        {renderRatingStars(selectedVendor.avgRating)}
-                        <span className="ml-2 text-sm">
-                          {selectedVendor.avgRating.toFixed(1)} (
-                          {selectedVendor.reviewCount} reviews)
-                        </span>
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="text-muted-foreground">No reviews yet.</p>
+                    )}
                   </div>
-
-                  <div>
-                    <h3 className="text-lg font-medium mb-2">Pricing</h3>
-                    <p className="text-lg font-bold text-primary">
-                      ${selectedVendor.minPrice.toLocaleString()} - $
-                      {selectedVendor.maxPrice.toLocaleString()}
-                    </p>
-
-                    <h4 className="font-medium mt-4 mb-1">Contact</h4>
-                    <div className="flex items-center mb-1">
-                      <Phone className="h-4 w-4 mr-2" />
-                      <span>
-                        {selectedVendor.phone ||
-                          "Contact information unavailable"}
-                      </span>
-                    </div>
-
+                  <DialogFooter>
                     <Button
+                      type="submit"
                       onClick={() => {
                         setOpenDialog(false);
                         bookVendor(selectedVendor.id);
                       }}
-                      className="mt-6 w-full"
-                      size="lg"
                     >
-                      <Calendar className="h-4 w-4 mr-2" />
                       Book This Vendor
                     </Button>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Close</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
-        </>
-      )}
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

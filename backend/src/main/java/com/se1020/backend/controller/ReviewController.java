@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/review")
 public class ReviewController {
@@ -31,12 +32,12 @@ public class ReviewController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
     @GetMapping("/vendor/{vendorId}")
     public List<Review> getReviewsByVendorId(@PathVariable String vendorId) throws IOException {
         return reviewService.getReviewsByVendorId(vendorId);
     }
-    
+
     @GetMapping("/couple/{coupleId}")
     public List<Review> getReviewsByCoupleId(@PathVariable String coupleId) throws IOException {
         return reviewService.getReviewsByCoupleId(coupleId);

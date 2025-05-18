@@ -6,13 +6,13 @@ import java.util.Date;
 
 public class Booking {
     private String bookingId;
-    private String coupleId;      // Link to the couple who made this booking
-    private String vendorId;      // Link to the vendor providing the service
-    private String serviceId;     // Link to the specific service being booked
+    private String coupleId; // Link to the couple who made this booking
+    private String vendorId; // Link to the vendor providing the service
+    private String weddingId; // Link to the wedding this booking is for
     private Date date;
     private BookingStatus status;
     private double totalCost;
-    
+
     // Payment information
     private PaymentStatus paymentStatus;
     private double amountPaid;
@@ -23,13 +23,12 @@ public class Booking {
 
     public Booking() {
     }
-    
-    public Booking(String bookingId, String coupleId, String vendorId, String serviceId, 
-                  Date date, BookingStatus status, double totalCost) {
+
+    public Booking(String bookingId, String coupleId, String vendorId,
+            Date date, BookingStatus status, double totalCost) {
         this.bookingId = bookingId;
         this.coupleId = coupleId;
         this.vendorId = vendorId;
-        this.serviceId = serviceId;
         this.date = date;
         this.status = status;
         this.totalCost = totalCost;
@@ -37,62 +36,62 @@ public class Booking {
         this.amountPaid = 0.0;
         this.remainingBalance = totalCost;
     }
-    
+
     public String getBookingId() {
         return bookingId;
     }
-    
+
     public void setBookingId(String bookingId) {
         this.bookingId = bookingId;
     }
-    
+
     public Date getDate() {
         return date;
     }
-    
+
     public void setDate(Date date) {
         this.date = date;
     }
-    
+
     public BookingStatus getStatus() {
         return status;
     }
-    
+
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
-    
+
     public double getTotalCost() {
         return totalCost;
     }
-    
+
     public void setTotalCost(double totalCost) {
         this.totalCost = totalCost;
         this.remainingBalance = totalCost - this.amountPaid;
     }
-    
+
     public String getCoupleId() {
         return coupleId;
     }
-    
+
     public void setCoupleId(String coupleId) {
         this.coupleId = coupleId;
     }
-    
+
     public String getVendorId() {
         return vendorId;
     }
-    
+
     public void setVendorId(String vendorId) {
         this.vendorId = vendorId;
     }
-    
-    public String getServiceId() {
-        return serviceId;
+
+    public String getWeddingId() {
+        return weddingId;
     }
-    
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
+
+    public void setWeddingId(String weddingId) {
+        this.weddingId = weddingId;
     }
 
     // New payment-related getters and setters
@@ -150,15 +149,15 @@ public class Booking {
     public void confirmBooking() {
         this.status = BookingStatus.CONFIRMED;
     }
-    
+
     public void cancelBooking() {
         this.status = BookingStatus.CANCELLED;
     }
-    
+
     public void generateInvoice() {
         // Implementation to generate an invoice for the booking
     }
-    
+
     public void processPayment() {
         // Implementation for payment processing
     }

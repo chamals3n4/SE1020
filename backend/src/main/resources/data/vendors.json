@@ -1,0 +1,24 @@
+[
+  {
+    "id": "vendor-1747555057660",
+    "email": "info@hexa7.labs",
+    "password": "0000",
+    "name": "Hexa7 Labs",
+    "phone": "0712193355",
+    "role": "VENDOR",
+    "vendorType": "CATERING",
+    "rating": 4.0,
+    "availability": [],
+    "status": "APPROVED",
+    "imageUrls": [
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555106322_FB_IMG_1720100188250.jpg",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555106907_20240530_173011.jpg",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555110307_original-succession-season-3-music-by-nicholas-britell-end-credits-raid-nicholas-britell-229-al-141.jpeg"
+    ],
+    "basePrice": 1500.0,
+    "address": "Bamunapotha",
+    "socialMediaLinks": {},
+    "approved": true,
+    "rejected": false
+  }
+]

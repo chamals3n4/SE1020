@@ -22,7 +22,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -37,97 +36,66 @@ import {
   Filter,
   Search,
   MoreHorizontal,
-  Edit,
-  Trash,
+  User,
   Mail,
-  UserCog,
-  CheckCircle,
-  Users,
+  Phone,
+  Heart,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { adminService } from "@/services/api";
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [couples, setCouples] = useState([]);
+  const [filteredCouples, setFilteredCouples] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("ALL");
-  const [confirmDeleteDialog, setConfirmDeleteDialog] = useState({
-    isOpen: false,
-    user: null,
-  });
+  const [selectedCouple, setSelectedCouple] = useState(null);
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchCouples = async () => {
       try {
-        const response = await adminService.getAllUsers();
-        setUsers(response.data);
-        setFilteredUsers(response.data);
+        const response = await adminService.getAllCouples();
+        setCouples(response.data);
+        setFilteredCouples(response.data);
       } catch (error) {
-        console.error("Error fetching users:", error);
-        toast.error("Failed to load users. Please try again.");
+        console.error("Error fetching couples:", error);
+        toast.error("Failed to load couples. Please try again.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUsers();
+    fetchCouples();
   }, []);
 
   useEffect(() => {
-    // Filter users based on search query and role filter
-    let result = users;
-
+    // Filter couples based on search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (user) =>
-          user.name.toLowerCase().includes(query) ||
-          user.email.toLowerCase().includes(query) ||
-          user.id.toLowerCase().includes(query)
+      const filtered = couples.filter(
+        (couple) =>
+          couple.name?.toLowerCase().includes(query) ||
+          couple.email?.toLowerCase().includes(query) ||
+          couple.partnerName?.toLowerCase().includes(query) ||
+          couple.phone?.toLowerCase().includes(query)
       );
+      setFilteredCouples(filtered);
+    } else {
+      setFilteredCouples(couples);
     }
+  }, [searchQuery, couples]);
 
-    if (roleFilter !== "ALL") {
-      result = result.filter((user) => user.role === roleFilter);
-    }
-
-    setFilteredUsers(result);
-  }, [users, searchQuery, roleFilter]);
-
-  const handleDeleteUser = async (userId) => {
+  const handleDeleteCouple = async (coupleId) => {
     try {
-      // In a real app we would delete via API
-      // await adminService.deleteUser(userId);
-
-      // For now, just update the UI
-      setUsers(users.filter((user) => user.id !== userId));
-      toast.success("User deleted successfully");
+      await adminService.deleteCouple(coupleId);
+      setCouples(couples.filter(couple => couple.id !== coupleId));
+      setFilteredCouples(filteredCouples.filter(couple => couple.id !== coupleId));
+      toast.success("Couple deleted successfully");
     } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Failed to delete user. Please try again.");
-    } finally {
-      setConfirmDeleteDialog({ isOpen: false, user: null });
-    }
-  };
-
-  const handleApproveVendor = async (vendorId) => {
-    try {
-      // In a real app we would approve via API
-      // await adminService.approveVendor(vendorId);
-
-      // For now, just update the UI
-      setUsers(
-        users.map((user) =>
-          user.id === vendorId ? { ...user, isApproved: true } : user
-        )
-      );
-      toast.success("Vendor approved successfully");
-    } catch (error) {
-      console.error("Error approving vendor:", error);
-      toast.error("Failed to approve vendor. Please try again.");
+      console.error("Error deleting couple:", error);
+      toast.error("Failed to delete couple. Please try again.");
     }
   };
 
@@ -140,29 +108,16 @@ export default function AdminUsers() {
     });
   };
 
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case "ADMIN":
-        return "bg-red-100 text-red-800";
-      case "VENDOR":
-        return "bg-blue-100 text-blue-800";
-      case "COUPLE":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   if (isLoading) {
-    return <div className="py-10 text-center">Loading users...</div>;
+    return <div className="py-10 text-center">Loading couples...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Couple Management</h1>
         <p className="text-muted-foreground">
-          Manage users, vendors, and couples on the platform
+          Manage couples registered on the platform
         </p>
       </div>
 
@@ -170,8 +125,8 @@ export default function AdminUsers() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              All Users <Badge>{filteredUsers.length}</Badge>
+              <Heart className="h-5 w-5" />
+              Registered Couples <Badge>{filteredCouples.length}</Badge>
             </CardTitle>
             <Button variant="outline" size="sm">
               <Filter className="h-4 w-4 mr-2" />
@@ -179,50 +134,20 @@ export default function AdminUsers() {
             </Button>
           </div>
           <CardDescription>
-            View and manage all registered users on the platform
+            View and manage couple accounts and details
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative w-full sm:w-1/2">
+            <div className="relative w-full">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search users..."
+                placeholder="Search couples by name, email, or phone..."
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </div>
-            <div className="flex w-full sm:w-1/2 gap-2">
-              <Button
-                variant={roleFilter === "ALL" ? "default" : "outline"}
-                onClick={() => setRoleFilter("ALL")}
-                className="flex-1"
-              >
-                All
-              </Button>
-              <Button
-                variant={roleFilter === "ADMIN" ? "default" : "outline"}
-                onClick={() => setRoleFilter("ADMIN")}
-                className="flex-1"
-              >
-                Admins
-              </Button>
-              <Button
-                variant={roleFilter === "VENDOR" ? "default" : "outline"}
-                onClick={() => setRoleFilter("VENDOR")}
-                className="flex-1"
-              >
-                Vendors
-              </Button>
-              <Button
-                variant={roleFilter === "COUPLE" ? "default" : "outline"}
-                onClick={() => setRoleFilter("COUPLE")}
-                className="flex-1"
-              >
-                Couples
-              </Button>
             </div>
           </div>
 
@@ -230,62 +155,38 @@ export default function AdminUsers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Couple</TableHead>
+                  <TableHead>Partner</TableHead>
+                  <TableHead>Contact</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                {filteredCouples.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6">
-                      No users found. Try adjusting your search or filters.
+                    <TableCell colSpan={5} className="text-center py-6">
+                      No couples found. Try adjusting your search.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
+                  filteredCouples.map((couple) => (
+                    <TableRow key={couple.id}>
                       <TableCell>
-                        <Badge
-                          className={`${getRoleBadgeColor(user.role)}`}
-                          variant="outline"
-                        >
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        {formatDate(user.createdAt)}
+                        <div className="font-medium">{couple.name}</div>
+                        <div className="text-sm text-muted-foreground">{couple.email}</div>
                       </TableCell>
                       <TableCell>
-                        {user.role === "VENDOR" && (
-                          <>
-                            {user.isApproved ? (
-                              <Badge className="bg-green-100 text-green-800">
-                                Approved
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-amber-100 text-amber-800">
-                                Pending
-                              </Badge>
-                            )}
-                          </>
-                        )}
-                        {user.role === "COUPLE" && (
-                          <Badge className="bg-purple-100 text-purple-800">
-                            Active
-                          </Badge>
-                        )}
-                        {user.role === "ADMIN" && (
-                          <Badge className="bg-red-100 text-red-800">
-                            {user.accessLevel || "Admin"}
-                          </Badge>
-                        )}
+                        <div className="font-medium">{couple.partnerName}</div>
+                        <div className="text-sm text-muted-foreground">{couple.partnerEmail}</div>
                       </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4" />
+                          {couple.phone}
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(couple.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -298,48 +199,19 @@ export default function AdminUsers() {
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() => {
-                                /* View user profile */
+                                setSelectedCouple(couple);
+                                setViewDetailsOpen(true);
                               }}
                             >
-                              <UserCog className="h-4 w-4 mr-2" />
+                              <User className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                /* Send email to user */
-                              }}
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              Contact User
-                            </DropdownMenuItem>
-                            {user.role === "VENDOR" && !user.isApproved && (
-                              <DropdownMenuItem
-                                onClick={() => handleApproveVendor(user.id)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Approve Vendor
-                              </DropdownMenuItem>
-                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              onClick={() => {
-                                /* Edit user */
-                              }}
-                            >
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit User
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
+                              onClick={() => handleDeleteCouple(couple.id)}
                               className="text-red-600"
-                              onClick={() =>
-                                setConfirmDeleteDialog({
-                                  isOpen: true,
-                                  user,
-                                })
-                              }
                             >
-                              <Trash className="h-4 w-4 mr-2" />
-                              Delete User
+                              Delete Account
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -353,41 +225,69 @@ export default function AdminUsers() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={confirmDeleteDialog.isOpen}
-        onOpenChange={(open) =>
-          setConfirmDeleteDialog({ ...confirmDeleteDialog, isOpen: open })
-        }
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm User Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete{" "}
-              <span className="font-medium">
-                {confirmDeleteDialog.user?.name}
-              </span>
-              ? This action cannot be undone and will permanently remove the user
-              and all associated data.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex items-center justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={() =>
-                setConfirmDeleteDialog({ isOpen: false, user: null })
-              }
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleDeleteUser(confirmDeleteDialog.user?.id)}
-            >
-              Delete User
-            </Button>
-          </DialogFooter>
+      {/* Couple Details Dialog */}
+      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
+        <DialogContent className="max-w-3xl">
+          {selectedCouple && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{selectedCouple.name}</DialogTitle>
+                <DialogDescription>
+                  Couple Account Details
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Primary Contact</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium">Name:</span> {selectedCouple.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email:</span> {selectedCouple.email}
+                    </div>
+                    <div>
+                      <span className="font-medium">Phone:</span> {selectedCouple.phone}
+                    </div>
+                    <div>
+                      <span className="font-medium">Joined:</span> {formatDate(selectedCouple.createdAt)}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Partner Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium">Name:</span> {selectedCouple.partner?.name || 'Not specified'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email:</span> {selectedCouple.partner?.email || 'Not specified'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Phone:</span> {selectedCouple.partner?.phone || 'Not specified'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="flex justify-end gap-2 mt-6">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    handleDeleteCouple(selectedCouple.id);
+                    setViewDetailsOpen(false);
+                  }}
+                >
+                  Delete Account
+                </Button>
+                <Button onClick={() => setViewDetailsOpen(false)}>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

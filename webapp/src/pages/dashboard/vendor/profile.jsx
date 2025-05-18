@@ -306,26 +306,34 @@ function VendorProfile() {
       setPortfolioImages(newPortfolioImages);
 
       // Get current vendor data
-      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
-      
+      const currentUser = JSON.parse(
+        localStorage.getItem("currentUser") || "{}"
+      );
+
       // Update the vendor profile with new images
       const updatedVendorData = {
         ...currentUser,
         id: vendorId,
-        imageUrls: newPortfolioImages // Update only the image URLs
+        imageUrls: newPortfolioImages, // Update only the image URLs
       };
 
       console.log("Updating vendor with image URLs:", newPortfolioImages);
 
       // Update vendor data in the backend
-      const response = await vendorService.updateVendor(vendorId, updatedVendorData);
+      const response = await vendorService.updateVendor(
+        vendorId,
+        updatedVendorData
+      );
       console.log("Vendor update response:", response);
 
       // Update localStorage with the new data
-      localStorage.setItem("currentUser", JSON.stringify({
-        ...currentUser,
-        imageUrls: newPortfolioImages
-      }));
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify({
+          ...currentUser,
+          imageUrls: newPortfolioImages,
+        })
+      );
 
       // Clear selected images
       setSelectedImages([]);
@@ -382,7 +390,7 @@ function VendorProfile() {
         servicePackages: packages,
         socialMediaLinks: profileData.socialMediaLinks || {},
         approved: profileData.approved || false,
-        rejected: profileData.rejected || false
+        rejected: profileData.rejected || false,
       };
 
       await vendorService.updateVendor(vendorId, updatedVendorData);
@@ -650,6 +658,7 @@ function VendorProfile() {
                     <path d="M9 21V9" />
                   </svg>
                 </div>
+
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Packages</p>
                   <p className="text-sm text-muted-foreground">

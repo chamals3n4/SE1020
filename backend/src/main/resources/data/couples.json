@@ -1,0 +1,21 @@
+[
+  {
+    "id": "couple-1747581227861",
+    "email": "chamals004@gmail.com",
+    "password": "0000",
+    "name": "Chamal Senarathna",
+    "phone": "0717110160",
+    "role": "COUPLE",
+    "budget": 5000.0,
+    "weddingDate": 1748044800000,
+    "partnerId": "user-1747581227861",
+    "partner": {
+      "id": "user-1747581227861",
+      "email": "navodadevangi@gmail.com",
+      "password": "0000",
+      "name": "Navoda Devangi",
+      "phone": "0712193355",
+      "role": "COUPLE"
+    }
+  }
+]

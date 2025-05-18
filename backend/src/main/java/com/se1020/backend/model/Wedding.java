@@ -18,6 +18,7 @@ public class Wedding {
     private Date date;
     
     private String location;
+    private String address;
     private WeddingStyle style;
     private double budget;
     private List<Task> tasks = new ArrayList<>();  // Composition relationship
@@ -59,6 +60,14 @@ public class Wedding {
     
     public void setLocation(String location) {
         this.location = location;
+    }
+    
+    public String getAddress() {
+        return address;
+    }
+    
+    public void setAddress(String address) {
+        this.address = address;
     }
     
     public WeddingStyle getStyle() {
@@ -107,9 +116,6 @@ public class Wedding {
         this.tasks.removeIf(task -> task.getTaskId().equals(taskId));
     }
     
-    public void addService(Service service) {
-        // Implementation would add a service to the wedding
-    }
     
     public void updateBudget(double amount) {
         this.budget = amount;

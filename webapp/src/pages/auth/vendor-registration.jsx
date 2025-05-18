@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import WeddingHeader from "../../components/wedding-header";
-import { Building, Mail, Phone, Map, FileText, Store } from "lucide-react";
+import { Building, Mail, Phone, Map, FileText, Store, CreditCard } from "lucide-react";
 
 function VendorRegistration() {
   const navigate = useNavigate();
@@ -35,6 +35,7 @@ function VendorRegistration() {
     vendorType: "",
     description: "",
     address: "",
+    basePrice: "",
   });
 
   const handleChange = (e) => {
@@ -68,6 +69,7 @@ function VendorRegistration() {
         vendorType: formData.vendorType,
         description: formData.description || "N/A",
         address: formData.address || "N/A",
+        basePrice: Number(formData.basePrice) || 0,
         rating: 0.0,
         isAvailable: true,
       };
@@ -278,6 +280,26 @@ function VendorRegistration() {
                     value={formData.address}
                     onChange={handleChange}
                     required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="basePrice"
+                    className="text-gray-700 flex items-center gap-2"
+                  >
+                    <CreditCard className="h-4 w-4 text-wedding-rose" />
+                    Base Price (LKR)
+                  </Label>
+                  <Input
+                    id="basePrice"
+                    name="basePrice"
+                    type="number"
+                    placeholder="Enter your base price"
+                    value={formData.basePrice}
+                    onChange={handleChange}
+                    required
+                    min="0"
                   />
                 </div>
 

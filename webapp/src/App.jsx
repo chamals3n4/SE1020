@@ -31,7 +31,6 @@ import VendorDetails from "./pages/dashboard/couple/vendor-details";
 import AdminOverview from "./pages/dashboard/admin/overview";
 import AdminUsers from "./pages/dashboard/admin/users";
 import AdminVendors from "./pages/dashboard/admin/vendors";
-import AdminDisputes from "./pages/dashboard/admin/disputes";
 
 function App() {
   return (
@@ -86,7 +85,6 @@ function App() {
             <Route path="overview" element={<AdminOverview />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="vendors" element={<AdminVendors />} />
-            <Route path="disputes" element={<AdminDisputes />} />
           </Route>
 
           {/* Redirect root to login page */}
