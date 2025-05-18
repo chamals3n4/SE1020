@@ -38,9 +38,7 @@ const coupleNavItems = [
 const adminNavItems = [
   { icon: Home, label: "Dashboard", path: "/dashboard/admin/overview" },
   { icon: Users, label: "Users", path: "/dashboard/admin/users" },
-  { icon: ShoppingBag, label: "Vendors", path: "/dashboard/admin/vendors" },
-  { icon: MessageSquare, label: "Disputes", path: "/dashboard/admin/disputes" },
-  { icon: Settings, label: "Settings", path: "/dashboard/admin/settings" },
+  { icon: ShoppingBag, label: "Vendors", path: "/dashboard/admin/vendors" }
 ];
 
 function DashboardLayout({ userType }) {

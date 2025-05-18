@@ -84,15 +84,15 @@ export default function AdminVendors() {
         (vendor) =>
           vendor.name.toLowerCase().includes(query) ||
           vendor.email.toLowerCase().includes(query) ||
-          vendor.category.toLowerCase().includes(query) ||
-          vendor.location.toLowerCase().includes(query)
+          vendor.vendorType?.toLowerCase().includes(query) ||
+          vendor.address?.toLowerCase().includes(query)
       );
     }
 
     if (statusFilter === "pending") {
-      result = result.filter((vendor) => !vendor.isApproved);
+      result = result.filter((vendor) => !vendor.status || vendor.status === "PENDING");
     } else if (statusFilter === "approved") {
-      result = result.filter((vendor) => vendor.isApproved);
+      result = result.filter((vendor) => vendor.status === "APPROVED");
     }
 
     setFilteredVendors(result);
@@ -102,14 +102,23 @@ export default function AdminVendors() {
     try {
       await adminService.approveVendor(vendorId);
       
-      // Refresh the vendors list to get the updated data
-      const response = await adminService.getAllVendors();
-      setVendors(response.data);
-      setFilteredVendors(response.data.filter(v => {
-        if (statusFilter === "pending") return !v.isApproved;
-        if (statusFilter === "approved") return v.isApproved;
-        return true;
-      }));
+      // Update the vendor status in the local state
+      setVendors(prevVendors => 
+        prevVendors.map(vendor => 
+          vendor.id === vendorId 
+            ? { ...vendor, status: "APPROVED" }
+            : vendor
+        )
+      );
+
+      // Update filtered vendors
+      setFilteredVendors(prevVendors => 
+        prevVendors.map(vendor => 
+          vendor.id === vendorId 
+            ? { ...vendor, status: "APPROVED" }
+            : vendor
+        )
+      );
       
       toast.success("Vendor approved successfully");
     } catch (error) {
@@ -122,14 +131,23 @@ export default function AdminVendors() {
     try {
       await adminService.rejectVendor(vendorId, reason);
       
-      // Refresh the vendors list to get the updated data
-      const response = await adminService.getAllVendors();
-      setVendors(response.data);
-      setFilteredVendors(response.data.filter(v => {
-        if (statusFilter === "pending") return !v.isApproved;
-        if (statusFilter === "approved") return v.isApproved;
-        return true;
-      }));
+      // Update the vendor status in the local state
+      setVendors(prevVendors => 
+        prevVendors.map(vendor => 
+          vendor.id === vendorId 
+            ? { ...vendor, status: "REJECTED" }
+            : vendor
+        )
+      );
+
+      // Update filtered vendors
+      setFilteredVendors(prevVendors => 
+        prevVendors.map(vendor => 
+          vendor.id === vendorId 
+            ? { ...vendor, status: "REJECTED" }
+            : vendor
+        )
+      );
       
       toast.success("Vendor rejected");
     } catch (error) {
@@ -149,12 +167,11 @@ export default function AdminVendors() {
 
   const getCategoryBadgeColor = (category) => {
     const categories = {
-      "Venue": "bg-purple-100 text-purple-800",
-      "Photography": "bg-blue-100 text-blue-800",
-      "Catering": "bg-amber-100 text-amber-800",
-      "Florist": "bg-green-100 text-green-800",
-      "Music": "bg-indigo-100 text-indigo-800",
-      "Bakery": "bg-pink-100 text-pink-800",
+      "VENUE": "bg-purple-100 text-purple-800",
+      "PHOTOGRAPHY": "bg-blue-100 text-blue-800",
+      "CATERING": "bg-amber-100 text-amber-800",
+      "MUSIC": "bg-indigo-100 text-indigo-800",
+      "DECORATION": "bg-green-100 text-green-800"
     };
     
     return categories[category] || "bg-gray-100 text-gray-800";
@@ -204,7 +221,7 @@ export default function AdminVendors() {
               >
                 Pending Approval
                 <Badge className="ml-2 bg-amber-100 text-amber-800">
-                  {vendors.filter(v => !v.isApproved).length}
+                  {vendors.filter(v => !v.status || v.status === "PENDING").length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger
@@ -252,30 +269,23 @@ export default function AdminVendors() {
                   filteredVendors.map((vendor) => (
                     <TableRow key={vendor.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{vendor.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {vendor.email}
-                          </div>
-                        </div>
+                        <div className="font-medium">{vendor.name}</div>
+                        <div className="text-sm text-muted-foreground">{vendor.email}</div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          className={getCategoryBadgeColor(vendor.category)}
-                          variant="outline"
-                        >
-                          {vendor.category}
+                        <Badge className={getCategoryBadgeColor(vendor.vendorType)}>
+                          {vendor.vendorType}
                         </Badge>
                       </TableCell>
-                      <TableCell>{vendor.location}</TableCell>
+                      <TableCell>{vendor.address}</TableCell>
                       <TableCell>{formatDate(vendor.createdAt)}</TableCell>
                       <TableCell>
-                        {vendor.isApproved ? (
+                        {vendor.status === "APPROVED" ? (
                           <Badge className="bg-green-100 text-green-800">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Approved
                           </Badge>
-                        ) : vendor.isRejected ? (
+                        ) : vendor.status === "REJECTED" ? (
                           <Badge className="bg-red-100 text-red-800">
                             <XCircle className="h-3 w-3 mr-1" />
                             Rejected
@@ -306,7 +316,7 @@ export default function AdminVendors() {
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            {!vendor.isApproved && !vendor.isRejected && (
+                            {!vendor.status || vendor.status === "PENDING" && (
                               <>
                                 <DropdownMenuItem
                                   onClick={() => handleApproveVendor(vendor.id)}
@@ -344,16 +354,16 @@ export default function AdminVendors() {
                 <DialogTitle className="text-2xl">{selectedVendor.name}</DialogTitle>
                 <DialogDescription className="flex items-center gap-2">
                   <Badge
-                    className={getCategoryBadgeColor(selectedVendor.category)}
+                    className={getCategoryBadgeColor(selectedVendor.vendorType)}
                     variant="outline"
                   >
-                    {selectedVendor.category}
+                    {selectedVendor.vendorType}
                   </Badge>
-                  {selectedVendor.isApproved ? (
+                  {selectedVendor.status === "APPROVED" ? (
                     <Badge className="bg-green-100 text-green-800">
                       Approved
                     </Badge>
-                  ) : selectedVendor.isRejected ? (
+                  ) : selectedVendor.status === "REJECTED" ? (
                     <Badge className="bg-red-100 text-red-800">
                       Rejected
                     </Badge>
@@ -376,7 +386,7 @@ export default function AdminVendors() {
                       <span className="font-medium">Phone:</span> {selectedVendor.phone}
                     </div>
                     <div>
-                      <span className="font-medium">Location:</span> {selectedVendor.location}
+                      <span className="font-medium">Location:</span> {selectedVendor.address}
                     </div>
                     <div>
                       <span className="font-medium">Joined:</span> {formatDate(selectedVendor.createdAt)}
@@ -416,7 +426,7 @@ export default function AdminVendors() {
               </div>
 
               <DialogFooter className="flex justify-end gap-2 mt-6">
-                {!selectedVendor.isApproved && !selectedVendor.isRejected && (
+                {!selectedVendor.status || selectedVendor.status === "PENDING" && (
                   <>
                     <Button
                       variant="destructive"
@@ -439,7 +449,7 @@ export default function AdminVendors() {
                     </Button>
                   </>
                 )}
-                {(selectedVendor.isApproved || selectedVendor.isRejected) && (
+                {(selectedVendor.status === "APPROVED" || selectedVendor.status === "REJECTED") && (
                   <Button onClick={() => setViewDetailsOpen(false)}>
                     Close
                   </Button>

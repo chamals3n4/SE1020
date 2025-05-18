@@ -2,10 +2,8 @@ package com.se1020.backend.util.dsa;
 
 import com.se1020.backend.model.Vendor;
 
-/**
- * Linked list implementation for managing vendors.
- * This class implements a basic linked list data structure for the OOP course.
- */
+// Linked list implementation for managing vendors.
+
 public class VendorLinkedList {
     private VendorNode head;
     private int size;

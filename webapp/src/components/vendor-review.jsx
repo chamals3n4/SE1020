@@ -14,173 +14,122 @@ import {
 import { Star } from "lucide-react";
 import { reviewService } from "@/services/api";
 
-const VendorReview = ({ vendorId, onReviewSubmitted }) => {
+export function VendorReview({ review, onSubmit, mode = "display" }) {
+  const [rating, setRating] = useState(review?.rating || 0);
+  const [comment, setComment] = useState(review?.comment || "");
   const [isOpen, setIsOpen] = useState(false);
-  const [rating, setRating] = useState(0);
-  const [hoveredRating, setHoveredRating] = useState(0);
-  const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Get current user from localStorage with proper key
-  const userStr = localStorage.getItem('user');
-  const user = userStr ? JSON.parse(userStr) : {};
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (rating === 0) {
+      alert("Please select a rating");
+      return;
+    }
     setIsSubmitting(true);
-    
-    // Exit if no user is logged in
-    if (!user.id) {
-      alert('Please log in to submit a review');
-      setIsSubmitting(false);
-      return;
-    }
-    
-    // Validate required vendor ID
-    if (!vendorId) {
-      console.error('Vendor ID is required for reviews');
-      alert('Unable to submit review: missing vendor information');
-      setIsSubmitting(false);
-      return;
-    }
-    
-    // Generate timestamp for consistent ID creation
-    const timestamp = Date.now();
-    
-    // Create review with proper relationship fields
-    const reviewData = {
-      // ID Management - use timestamp for consistency
-      id: `review-${timestamp}`,
-      
-      // Relationship fields - ensure all connections are made
-      vendorId: vendorId,
-      coupleId: user.id,
-      weddingId: user.weddingId, // Link to wedding if available
-      bookingId: null, // Could be linked to a booking if available
-      
-      // Review content
-      rating: rating,
-      comment: comment,
-      
-      // Metadata
-      reviewerName: user.name || 'Anonymous User',
-      reviewerEmail: user.email,
-      date: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      
-      // Initial status - could be moderated in a real system
-      status: 'published'
-    };
-    
     try {
-      // Send review to backend
-      console.log('Submitting review:', reviewData);
-      await reviewService.createReview(reviewData);
-      
-      // Close dialog and reset form
-      setIsOpen(false);
-      setRating(0);
-      setComment('');
-      
-      // Call callback if provided to update UI
-      if (onReviewSubmitted) {
-        onReviewSubmitted(reviewData);
+      // Get the current user
+      const userStr = localStorage.getItem('currentUser');
+      const user = userStr ? JSON.parse(userStr) : {};
+      if (!userStr || !user.id) {
+        alert('Please log in to submit a review');
+        setIsSubmitting(false);
+        return;
       }
-      
-      alert('Thank you for your review!');
+      // Validate required vendor ID
+      if (!review?.vendorId) {
+        console.error('Vendor ID is required for reviews');
+        alert('Unable to submit review: missing vendor information');
+        setIsSubmitting(false);
+        return;
+      }
+      // Create review data
+      const reviewData = {
+        rating: rating,
+        comment: comment
+      };
+      // Call the parent's onSubmit callback
+      if (onSubmit) {
+        await onSubmit(reviewData);
+        // Reset form
+        setIsOpen(false);
+        setRating(0);
+        setComment('');
+      }
     } catch (error) {
       console.error('Failed to submit review:', error);
-      
-      // For demo purposes, still show success and update UI
-      setIsOpen(false);
-      
-      // Call callback if provided
-      if (onReviewSubmitted) {
-        onReviewSubmitted(reviewData);
-      }
-      
-      alert('Thank you for your review! (Saved locally)');
-    } finally {
       setIsSubmitting(false);
+      alert('Failed to submit review. Please try again.');
     }
   };
-  
-  const renderStars = (interactionType) => {
-    return Array(5)
-      .fill(0)
-      .map((_, index) => {
-        const ratingValue = index + 1;
-        
-        return (
+
+  const StarRating = ({ value, onChange, readonly }) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
           <Star
-            key={`${interactionType}-${ratingValue}`}
-            className={`h-6 w-6 cursor-pointer ${
-              (interactionType === 'click' ? rating >= ratingValue : hoveredRating >= ratingValue)
-                ? 'text-yellow-400 fill-yellow-400'
-                : 'text-gray-300'
+            key={star}
+            className={`w-5 h-5 ${readonly ? "" : "cursor-pointer"} ${
+              star <= value ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
             }`}
-            onClick={() => interactionType === 'click' && setRating(ratingValue)}
-            onMouseEnter={() => interactionType === 'hover' && setHoveredRating(ratingValue)}
-            onMouseLeave={() => interactionType === 'hover' && setHoveredRating(rating)}
+            onClick={() => !readonly && onChange && onChange(star)}
           />
-        );
-      });
+        ))}
+      </div>
+    );
   };
+
+  if (mode === "display" && review) {
+    return (
+      <div className="border rounded-lg p-4 mb-4">
+        <div className="flex justify-between items-start mb-2">
+          <StarRating value={review.rating} readonly={true} />
+          <span className="text-sm text-gray-400">
+            {new Date(review.createdAt).toLocaleDateString()}
+          </span>
+        </div>
+        <p className="text-sm text-gray-600">{review.comment}</p>
+        {review.reviewerName && (
+          <p className="mt-2 text-xs text-gray-400">- {review.reviewerName}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Write a Review
-        </Button>
+        <Button onClick={() => setIsOpen(true)}>Write a Review</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Review this Vendor</DialogTitle>
-        </DialogHeader>
+      <DialogContent>
+        <DialogTitle>Write a Review</DialogTitle>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>Rating</Label>
-            <div className="flex space-x-1">
-              {renderStars('click')}
-            </div>
-            <div className="flex space-x-1">
-              {renderStars('hover')}
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Rating</label>
+            <StarRating value={rating} onChange={setRating} />
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="review-comment">Your Review</Label>
+          <div>
+            <label className="block text-sm font-medium mb-2">Review</label>
             <Textarea
-              id="review-comment"
-              placeholder="Share your experience with this vendor..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              required
+              placeholder="Write your review here..."
               className="min-h-[100px]"
+              required
             />
           </div>
-          
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={rating === 0 || isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
-            </Button>
-          </DialogFooter>
+          <Button type="submit" className="w-full">
+            Submit Review
+          </Button>
         </form>
       </DialogContent>
+      <DialogFooter>
+        <Button type="submit" disabled={rating === 0 || isSubmitting}>
+          {isSubmitting ? 'Submitting...' : 'Submit Review'}
+        </Button>
+      </DialogFooter>
     </Dialog>
   );
-};
+}
 
 export default VendorReview;

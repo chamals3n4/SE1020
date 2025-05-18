@@ -2,7 +2,6 @@ package com.se1020.backend.model;
 
 import com.se1020.backend.enums.SocialMediaPlatform;
 import com.se1020.backend.enums.VendorType;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,35 +11,33 @@ public class Vendor extends User {
     private VendorType vendorType;
     private String businessName;
     private double rating = 0.0;
-    private List<String> availability = new ArrayList<>(); // For simplicity, use List<String> for dates
+    private List<String> availability = new ArrayList<>();
     
-    // Admin approval management
-    private boolean isApproved = false;
-    private boolean isRejected = false;
-    private LocalDateTime approvalDate;
-    private LocalDateTime rejectionDate;
+    // Simplified status management
+    private String status = "PENDING"; // PENDING, APPROVED, REJECTED
     
     // Portfolio management
-    private List<String> imageUrls = new ArrayList<>(); // For storing Supabase image URLs
+    private List<String> imageUrls = new ArrayList<>();
     
-    // Service packages/pricing tiers
-    private List<ServicePackage> servicePackages = new ArrayList<>();
+    // Basic pricing
+    private double basePrice = 0.0;
     
-    // Geographic location/service area
+    // Simplified location
     private String address = "";
+    private Double serviceRadius;
     
     // Social media links
     private Map<SocialMediaPlatform, String> socialMediaLinks = new HashMap<>();
     
-    // Constructor to ensure all collections are initialized
+    // Constructor
     public Vendor() {
         super();
-        this.servicePackages = new ArrayList<>();
         this.availability = new ArrayList<>();
         this.imageUrls = new ArrayList<>();
         this.socialMediaLinks = new HashMap<>();
     }
 
+    // Basic getters and setters
     public VendorType getVendorType() {
         return vendorType;
     }
@@ -73,40 +70,41 @@ public class Vendor extends User {
         this.availability = availability;
     }
     
-    // Admin approval methods
+    // Simplified status methods
+    public String getStatus() {
+        return status;
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    // Approval status methods
     public boolean isApproved() {
-        return isApproved;
+        return "APPROVED".equals(status);
     }
     
     public void setApproved(boolean approved) {
-        isApproved = approved;
+        if (approved) {
+            this.status = "APPROVED";
+        } else if ("APPROVED".equals(status)) {
+            this.status = "PENDING";
+        }
     }
     
     public boolean isRejected() {
-        return isRejected;
+        return "REJECTED".equals(status);
     }
     
     public void setRejected(boolean rejected) {
-        isRejected = rejected;
+        if (rejected) {
+            this.status = "REJECTED";
+        } else if ("REJECTED".equals(status)) {
+            this.status = "PENDING";
+        }
     }
     
-    public LocalDateTime getApprovalDate() {
-        return approvalDate;
-    }
-    
-    public void setApprovalDate(LocalDateTime approvalDate) {
-        this.approvalDate = approvalDate;
-    }
-    
-    public LocalDateTime getRejectionDate() {
-        return rejectionDate;
-    }
-    
-    public void setRejectionDate(LocalDateTime rejectionDate) {
-        this.rejectionDate = rejectionDate;
-    }
-    
-    // Portfolio management methods
+    // Image management methods
     public List<String> getImageUrls() {
         return imageUrls;
     }
@@ -128,26 +126,13 @@ public class Vendor extends User {
         }
     }
     
-    // Service packages methods
-    public List<ServicePackage> getServicePackages() {
-        return servicePackages;
+    // Price methods
+    public double getBasePrice() {
+        return basePrice;
     }
-    
-    public void setServicePackages(List<ServicePackage> servicePackages) {
-        this.servicePackages = servicePackages;
-    }
-    
-    public void addServicePackage(ServicePackage servicePackage) {
-        if (this.servicePackages == null) {
-            this.servicePackages = new ArrayList<>();
-        }
-        this.servicePackages.add(servicePackage);
-    }
-    
-    public void removeServicePackage(String packageId) {
-        if (this.servicePackages != null) {
-            this.servicePackages.removeIf(pkg -> pkg.getId().equals(packageId));
-        }
+
+    public void setBasePrice(double basePrice) {
+        this.basePrice = basePrice;
     }
     
     // Location methods
@@ -159,6 +144,14 @@ public class Vendor extends User {
         this.address = address;
     }
     
+    public Double getServiceRadius() {
+        return serviceRadius;
+    }
+    
+    public void setServiceRadius(Double serviceRadius) {
+        this.serviceRadius = serviceRadius;
+    }
+    
     // Social media methods
     public Map<SocialMediaPlatform, String> getSocialMediaLinks() {
         return socialMediaLinks;
@@ -166,5 +159,18 @@ public class Vendor extends User {
     
     public void setSocialMediaLinks(Map<SocialMediaPlatform, String> socialMediaLinks) {
         this.socialMediaLinks = socialMediaLinks;
+    }
+    
+    public void addSocialMediaLink(SocialMediaPlatform platform, String link) {
+        if (this.socialMediaLinks == null) {
+            this.socialMediaLinks = new HashMap<>();
+        }
+        this.socialMediaLinks.put(platform, link);
+    }
+    
+    public void removeSocialMediaLink(SocialMediaPlatform platform) {
+        if (this.socialMediaLinks != null) {
+            this.socialMediaLinks.remove(platform);
+        }
     }
 }

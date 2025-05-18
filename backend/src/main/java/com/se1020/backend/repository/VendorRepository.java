@@ -74,22 +74,29 @@ public class VendorRepository {
             if (vendor.getAvailability() != null) existingVendor.setAvailability(vendor.getAvailability());
             if (vendor.getAddress() != null) existingVendor.setAddress(vendor.getAddress());
             if (vendor.getImageUrls() != null) existingVendor.setImageUrls(vendor.getImageUrls());
-            if (vendor.getServicePackages() != null) existingVendor.setServicePackages(vendor.getServicePackages());
+            if (vendor.getBasePrice() > 0) existingVendor.setBasePrice(vendor.getBasePrice());
             if (vendor.getSocialMediaLinks() != null) existingVendor.setSocialMediaLinks(vendor.getSocialMediaLinks());
+            if (vendor.getStatus() != null) existingVendor.setStatus(vendor.getStatus());
             
             // Add updated vendor back to list
             vendors.add(existingVendor);
+            
+            // Save the updated list
+            saveAll(vendors);
         } else {
             // If vendor doesn't exist, add as new
             vendors.add(vendor);
+            saveAll(vendors);
         }
-        
-        objectMapper.writeValue(file, vendors);
     }
 
     public void delete(String vendorId) throws IOException {
         List<Vendor> vendors = findAll();
         vendors.removeIf(v -> v.getId().equals(vendorId));
+        objectMapper.writeValue(file, vendors);
+    }
+
+    private void saveAll(List<Vendor> vendors) throws IOException {
         objectMapper.writeValue(file, vendors);
     }
 }

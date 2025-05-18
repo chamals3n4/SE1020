@@ -7,249 +7,90 @@ const api = axios.create({
   },
 });
 
-// Vendor  services
+// Vendor services
 export const vendorService = {
   getAllVendors: () => api.get("/vendor"),
-
   getVendorById: (id) => api.get(`/vendor/${id}`),
-
   createVendor: (vendorData) => api.post("/vendor", vendorData),
-
-  createVendorProfile: (profileData) =>
-    api.post("/vendor/profile", profileData),
-
   updateVendor: (id, vendorData) => api.put(`/vendor/${id}`, vendorData),
-
   deleteVendor: (id) => api.delete(`/vendor/${id}`),
-
   searchVendors: (criteria) => api.post("/vendor/search", criteria),
-
-  searchVendorsByParams: (params) => api.get("/vendor/search", { params }),
-
   getTopRatedVendors: () => api.get("/vendor/top-rated"),
-
   getVendorsByPriceRange: (minPrice, maxPrice) => {
     const params = {};
     if (minPrice) params.minPrice = minPrice;
     if (maxPrice) params.maxPrice = maxPrice;
     return api.get("/vendor/price-range", { params });
   },
-
-  getVendorPortfolio: (id) => api.get(`/vendor/${id}/portfolio`),
-  addPortfolioItem: (id, item) => api.post(`/vendor/${id}/portfolio`, item),
-  removePortfolioItem: (vendorId, itemId) =>
-    api.delete(`/vendor/${vendorId}/portfolio/${itemId}`),
-
+  getVendorsSortedByPrice: (ascending = true) => api.get("/vendor/sorted-by-price", { params: { ascending } }),
   getVendorPackages: (id) => api.get(`/vendor/${id}/packages`),
-  addServicePackage: (id, packageData) =>
-    api.post(`/vendor/${id}/packages`, packageData),
-  removeServicePackage: (vendorId, packageId) =>
-    api.delete(`/vendor/${vendorId}/packages/${packageId}`),
-
+  addServicePackage: (id, packageData) => api.post(`/vendor/${id}/packages`, packageData),
+  removeServicePackage: (vendorId, packageId) => api.delete(`/vendor/${vendorId}/packages/${packageId}`),
   getVendorLocation: (id) => api.get(`/vendor/${id}/location`),
-  updateVendorLocation: (id, locationData) =>
-    api.put(`/vendor/${id}/location`, null, { params: locationData }),
-
-  createVendorProfile: (profileData) =>
-    api.post('/vendor/profile', profileData),
-
+  updateVendorLocation: (id, locationData) => api.put(`/vendor/${id}/location`, null, { params: locationData }),
   getVendorSocialMedia: (id) => api.get(`/vendor/${id}/social-media`),
-  addSocialMediaLink: (id, platform, link) =>
-    api.post(`/vendor/${id}/social-media`, null, {
-      params: { platform, link },
-    }),
-  removeSocialMediaLink: (id, platform) =>
-    api.delete(`/vendor/${id}/social-media/${platform}`),
 };
 
-// Couple  services
+// Couple services
 export const coupleService = {
   getAllCouples: () => api.get("/couple"),
-
   getCoupleById: (id) => api.get(`/couple/${id}`),
-
   createCouple: (coupleData) => api.post("/couple", coupleData),
-
   updateCouple: (id, coupleData) => api.put(`/couple/${id}`, coupleData),
-
   deleteCouple: (id) => api.delete(`/couple/${id}`),
 };
 
-// Wedding  services
+// Wedding services
 export const weddingService = {
   getAllWeddings: () => api.get("/wedding"),
-
   getWeddingById: (id) => api.get(`/wedding/${id}`),
-
-  createWedding: (weddingData) => {
-    console.log('Creating wedding with data:', weddingData);
-    // Send the wedding data directly without wrapping it
-    return api.post("/wedding/profile", weddingData);
-  },
-
-  updateWedding: (id, weddingData) => {
-    console.log(`Updating wedding ${id} with data:`, weddingData);
-    return api.put(`/wedding/${id}`, weddingData);
-  },
-
+  createWedding: (weddingData) => api.post("/wedding/profile", weddingData),
+  updateWedding: (id, weddingData) => api.put(`/wedding/${id}`, weddingData),
   deleteWedding: (id) => api.delete(`/wedding/${id}`),
 };
 
 // Booking services
 export const bookingService = {
   getAllBookings: () => api.get("/booking"),
-
   getBookingById: (id) => api.get(`/booking/${id}`),
-
   createBooking: (bookingData) => api.post("/booking", bookingData),
-
-  // Enhanced updateBooking that first fetches the current booking data to avoid data loss
-  updateBooking: async (id, bookingData) => {
-    if (!id || id === 'undefined') {
-      throw new Error('Booking ID is required for update and cannot be undefined.');
-    }
-    console.log(`Enhanced updateBooking for ID ${id}`);
-    try {
-      // First, get the current booking data
-      const currentResponse = await api.get(`/booking/${id}`);
-      if (currentResponse.data) {
-        console.log('Found existing booking data:', currentResponse.data);
-        // Merge current data with update data to preserve all fields
-        const updatedData = { 
-          ...currentResponse.data,  // Keep all existing fields
-          ...bookingData,          // Apply updates
-          id: id,                  // Ensure ID is preserved
-          bookingId: id            // Ensure bookingId is preserved
-        };
-        console.log('Sending complete merged data:', updatedData);
-        return api.put(`/booking/${id}`, updatedData);
-      } else {
-        // Fall back to direct update if no current data found
-        console.warn('No existing booking found, doing direct update');
-        return api.put(`/booking/${id}`, bookingData);
-      }
-    } catch (error) {
-      console.error('Error in enhanced updateBooking:', error);
-      // Fall back to direct update if fetch fails
-      return api.put(`/booking/${id}`, bookingData);
-    }
-  },
-
+  updateBooking: (id, bookingData) => api.put(`/booking/${id}`, bookingData),
   deleteBooking: (id) => api.delete(`/booking/${id}`),
-
-  confirmBooking: async (id) => {
-    console.log(`API: Confirming booking ${id}`);
-    // Use the enhanced updateBooking to preserve all booking data
-    return bookingService.updateBooking(id, { status: "CONFIRMED" });
-  },
-
-  cancelBooking: async (id) => {
-    console.log(`API: Cancelling booking ${id}`);
-    // Use the enhanced updateBooking to preserve all booking data
-    return bookingService.updateBooking(id, { status: "CANCELLED" });
-  },
+  confirmBooking: (id) => api.put(`/booking/${id}`, { status: "CONFIRMED" }),
+  cancelBooking: (id) => api.put(`/booking/${id}`, { status: "CANCELLED" }),
 };
 
-// Task  services
+// Task services
 export const taskService = {
-  getAllTasks: async () => {
-    console.log('Fetching all tasks');
-    try {
-      const response = await api.get("/tasks");
-      console.log('Successfully fetched all tasks:', response.data);
-      return response;
-    } catch (error) {
-      console.error('Error fetching all tasks:', error);
-      throw error;
-    }
-  },
-
-  getTaskById: async (id) => {
-    console.log('Fetching task with ID:', id);
-    try {
-      const response = await api.get(`/tasks/${id}`);
-      console.log('Successfully fetched task:', response.data);
-      return response;
-    } catch (error) {
-      console.error('Error fetching task:', error);
-      throw error;
-    }
-  },
-
-  getTasksByWeddingId: async (weddingId) => {
-    console.log('Fetching tasks for wedding ID:', weddingId);
-    try {
-      const response = await api.get(`/tasks/wedding/${weddingId}`);
-      console.log('Successfully fetched tasks for wedding:', response.data);
-      return response;
-    } catch (error) {
-      console.error('Error fetching tasks for wedding:', error);
-      throw error;
-    }
-  },
-
-  createTask: async (taskData) => {
-    console.log('Creating new task:', taskData);
-    try {
-      const response = await api.post("/tasks", taskData);
-      console.log('Successfully created task:', response.data);
-      return response;
-    } catch (error) {
-      console.error('Error creating task:', error);
-      throw error;
-    }
-  },
-
-  updateTask: async (id, taskData) => {
-    console.log('Updating task:', { id, taskData });
-    try {
-      const response = await api.put(`/tasks/${id}`, taskData);
-      console.log('Successfully updated task:', response.data);
-      return response;
-    } catch (error) {
-      console.error('Error updating task:', error);
-      throw error;
-    }
-  },
-
-  deleteTask: async (id) => {
-    console.log('Deleting task with ID:', id);
-    try {
-      const response = await api.delete(`/tasks/${id}`);
-      console.log('Successfully deleted task');
-      return response;
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      throw error;
-    }
-  },
+  getAllTasks: () => api.get("/tasks"),
+  getTaskById: (id) => api.get(`/tasks/${id}`),
+  getTasksByWeddingId: (weddingId) => api.get(`/tasks/wedding/${weddingId}`),
+  createTask: (taskData) => api.post("/tasks", taskData),
+  updateTask: (id, taskData) => api.put(`/tasks/${id}`, taskData),
+  deleteTask: (id) => api.delete(`/tasks/${id}`),
 };
 
-// Review  services
+// Review services
 export const reviewService = {
   getAllReviews: () => api.get("/review"),
-
   getReviewById: (id) => api.get(`/review/${id}`),
-
   getReviewsByVendorId: (vendorId) => api.get(`/review/vendor/${vendorId}`),
-
   createReview: (reviewData) => api.post("/review", reviewData),
-
   updateReview: (id, reviewData) => api.put(`/review/${id}`, reviewData),
-
   deleteReview: (id) => api.delete(`/review/${id}`),
 };
 
 // Admin services
 export const adminService = {
-  login: async (email, password) => {
-    return api.post("/admin/login", { email, password });
-  },
+  login: (email, password) => api.post("/admin/login", { email, password }),
   getAllUsers: () => api.get("/admin/users"),
   getAllVendors: () => api.get("/admin/vendors"),
   getStats: () => api.get("/admin/stats"),
-  approveVendor: (vendorId) => api.put(`/admin/vendor/${vendorId}/approve`),
-  rejectVendor: (vendorId, reason) => api.put(`/admin/vendor/${vendorId}/reject`, { reason })
+  approveVendor: (vendorId) => api.put(`/admin/vendors/${vendorId}/approve`),
+  rejectVendor: (vendorId, reason) => api.put(`/admin/vendors/${vendorId}/reject`, { reason }),
+  getAllCouples: () => api.get("/admin/couples"),
+  getCoupleById: (coupleId) => api.get(`/admin/couples/${coupleId}`),
+  deleteCouple: (coupleId) => api.delete(`/admin/couples/${coupleId}`)
 };
 
 export default {

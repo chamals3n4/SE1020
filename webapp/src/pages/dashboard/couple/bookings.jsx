@@ -9,6 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -24,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import {
   Calendar,
   Clock,
@@ -33,18 +41,50 @@ import {
   Store,
   CheckCircle,
   Trash2,
+  Star,
 } from "lucide-react";
-import { bookingService, vendorService } from "@/services/api";
+import { bookingService, vendorService, reviewService } from "@/services/api";
+import { VendorReview } from "@/components/vendor-review";
 
 function CoupleBookings() {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   // Get current user from localStorage (from auth context)
   const currentUser = JSON.parse(localStorage.getItem("currentUser")) || {};
   const coupleId = currentUser.id || "couple-123";
+
+  const handleReviewSubmit = async (reviewData) => {
+    try {
+      // Generate a unique ID for the review
+      const timestamp = Date.now();
+      const review = {
+        ...reviewData,
+        id: `review-${timestamp}`,
+        vendorId: selectedBooking.vendorId,
+        coupleId: coupleId,
+        bookingId: selectedBooking.bookingId,
+        weddingId: currentUser.weddingId,
+        createdAt: new Date().toISOString(),
+        reviewerName: currentUser.name || 'Anonymous User',
+        reviewerEmail: currentUser.email,
+        date: new Date().toISOString(),
+        status: 'published'
+      };
+      
+      await reviewService.createReview(review);
+      toast.success("Review submitted successfully!");
+      setShowReviewDialog(false);
+      fetchBookings(); // Refresh the bookings list
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review. Please try again.");
+    }
+  };
 
   // Fetch bookings (with vendor details for each booking) from backend only
   useEffect(() => {
@@ -216,6 +256,28 @@ function CoupleBookings() {
         </div>
       </div>
 
+      {/* Review Dialog */}
+      {showReviewDialog && (
+        <Dialog open={showReviewDialog} onOpenChange={setShowReviewDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Review {selectedBooking?.vendorName}</DialogTitle>
+              <DialogDescription>
+                Share your experience with this vendor
+              </DialogDescription>
+            </DialogHeader>
+            <VendorReview
+              mode="create"
+              onSubmit={handleReviewSubmit}
+              review={{
+                vendorId: selectedBooking.vendorId,
+                bookingId: selectedBooking.bookingId
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Vendor Bookings</CardTitle>
@@ -282,15 +344,13 @@ function CoupleBookings() {
                     <TableCell>
                       <div className="flex space-x-2">
                         {booking.status.toLowerCase() !== "cancelled" && (
-                          <>
+                          <div className="flex space-x-2">
                             <Button
                               variant="outline"
                               size="sm"
                               className="h-8 px-2"
                               onClick={() =>
-                                (window.location.href = `tel:${
-                                  booking.vendorPhone || "555-123-4567"
-                                }`)
+                                (window.location.href = `tel:${booking.vendorPhone || "555-123-4567"}`)
                               }
                             >
                               <Phone className="h-3.5 w-3.5 mr-1" />
@@ -325,20 +385,21 @@ function CoupleBookings() {
                                 Cancel
                               </Button>
                             )}
-                          </>
-                        )}
-                        {booking.status.toLowerCase() === "cancelled" && (
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="h-8 px-2"
-                              onClick={() => handleDeleteBooking(booking.bookingId)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5 mr-1" />
-                              Delete
-                            </Button>
                           </div>
+                        )}
+                        {booking.status === "CONFIRMED" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2"
+                            onClick={() => {
+                              setSelectedBooking(booking);
+                              setShowReviewDialog(true);
+                            }}
+                          >
+                            <Star className="h-4 w-4 mr-1" />
+                            Add Review
+                          </Button>
                         )}
                       </div>
                     </TableCell>

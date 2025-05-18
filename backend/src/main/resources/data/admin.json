@@ -1,0 +1,9 @@
+[
+    {
+        "id": "admin-001",
+        "email": "admin@weddingplanner.com",
+        "password": "admin123",
+        "name": "System Administrator",
+        "role": "ADMIN"
+    }
+]

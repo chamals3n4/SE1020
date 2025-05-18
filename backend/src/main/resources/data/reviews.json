@@ -1,0 +1,12 @@
+[
+  {
+    "reviewId": "3a40e931-513e-4e0b-9f57-f4b503a1d4c2",
+    "vendorId": "vendor-1747555057660",
+    "coupleId": "couple-1747554999475",
+    "bookingId": "booking-1747573349477",
+    "rating": 4,
+    "comment": "nice",
+    "reviewDate": 1747573438603,
+    "verified": false
+  }
+]
