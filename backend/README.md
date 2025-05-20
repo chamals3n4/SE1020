@@ -81,7 +81,7 @@ The project follows a standard Spring Boot architecture with the following layer
 - `PUT /api/booking/{id}/cancel` - Cancel a booking
 - `DELETE /api/booking/{id}` - Delete a booking
 
-<!-- TODO (Hamdi): Add API Endpoints for the Task component -->
+<!-- TODO (Kavindu): Add API Endpoints for the Task component -->
 ### Task Endpoints
 
 ### Review Endpoints
@@ -94,9 +94,25 @@ The project follows a standard Spring Boot architecture with the following layer
 - `DELETE /api/review/{id}` - Delete a review
 
 
-<!-- TODO (Kavindu): Add API Endpoints for the Admin component -->
+<!-- TODO (Hamdhi): Add API Endpoints for the Admin component -->
 ### Admin Endpoints
-
+- `POST /api/admin/login` - Admin login
+- `GET /api/admin/admins` - Get all admins
+- `GET /api/admin/admins/{adminId}` - Get admin by ID
+- `POST /api/admin/admins` - Create a new admin
+- `PUT /api/admin/admins/{adminId}` - Update an admin
+- `DELETE /api/admin/admins/{adminId}` - Delete an admin
+- `GET /api/admin/users` - Get all users
+- `DELETE /api/admin/users/{userId}` - Delete a user
+- `GET /api/admin/vendors` - Get all vendors
+- `GET /api/admin/vendors/{vendorId}` - Get vendor by ID
+- `PUT /api/admin/vendors/{vendorId}/approve` - Approve a vendor
+- `PUT /api/admin/vendors/{vendorId}/reject` - Reject a vendor
+- `DELETE /api/admin/vendors/{vendorId}` - Delete a vendor
+- `GET /api/admin/couples` - Get all couples
+- `GET /api/admin/couples/{coupleId}` - Get couple by ID
+- `DELETE /api/admin/couples/{coupleId}` - Delete a couple
+- `GET /api/admin/stats` - Get system statistics
 
 ## Data Model
 
