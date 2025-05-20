@@ -37,6 +37,11 @@ public class Vendor extends User {
         this.socialMediaLinks = new HashMap<>();
     }
 
+    @Override
+    public String getUserType() {
+        return "VENDOR";
+    }
+
     // Basic getters and setters
     public VendorType getVendorType() {
         return vendorType;

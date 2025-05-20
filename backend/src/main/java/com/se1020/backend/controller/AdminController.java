@@ -1,5 +1,6 @@
 package com.se1020.backend.controller;
 
+import com.se1020.backend.model.Admin;
 import com.se1020.backend.model.User;
 import com.se1020.backend.model.Vendor;
 import com.se1020.backend.model.Couple;
@@ -22,12 +23,12 @@ public class AdminController {
     private AdminService adminService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody Map<String, String> credentials) {
+    public ResponseEntity<Admin> login(@RequestBody Map<String, String> credentials) {
         try {
             String email = credentials.get("email");
             String password = credentials.get("password");
             
-            User admin = adminService.login(email, password);
+            Admin admin = adminService.login(email, password);
             if (admin != null) {
                 return ResponseEntity.ok(admin);
             } else {
@@ -38,6 +39,63 @@ public class AdminController {
         }
     }
 
+    // Admin management endpoints
+    @GetMapping("/admins")
+    public ResponseEntity<List<Admin>> getAllAdmins() {
+        try {
+            List<Admin> admins = adminService.getAllAdmins();
+            return ResponseEntity.ok(admins);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/admins/{adminId}")
+    public ResponseEntity<Admin> getAdminById(@PathVariable String adminId) {
+        try {
+            Admin admin = adminService.getAdminById(adminId);
+            if (admin != null) {
+                return ResponseEntity.ok(admin);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping("/admins")
+    public ResponseEntity<Admin> createAdmin(@RequestBody Admin admin) {
+        try {
+            adminService.createAdmin(admin);
+            return ResponseEntity.status(HttpStatus.CREATED).body(admin);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/admins/{adminId}")
+    public ResponseEntity<Void> updateAdmin(@PathVariable String adminId, @RequestBody Admin admin) {
+        try {
+            admin.setId(adminId);
+            adminService.updateAdmin(admin);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/admins/{adminId}")
+    public ResponseEntity<Void> deleteAdmin(@PathVariable String adminId) {
+        try {
+            adminService.deleteAdmin(adminId);
+            return ResponseEntity.noContent().build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // User management endpoints
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         try {
@@ -58,6 +116,7 @@ public class AdminController {
         }
     }
 
+    // Vendor management endpoints
     @GetMapping("/vendors")
     public ResponseEntity<List<Vendor>> getAllVendors() {
         try {
@@ -112,6 +171,7 @@ public class AdminController {
         }
     }
 
+    // Couple management endpoints
     @GetMapping("/couples")
     public ResponseEntity<List<Couple>> getAllCouples() {
         try {
@@ -146,6 +206,7 @@ public class AdminController {
         }
     }
 
+    // Statistics endpoint
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Object>> getStats() {
         try {

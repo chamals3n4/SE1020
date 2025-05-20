@@ -153,12 +153,4 @@ public class Booking {
     public void cancelBooking() {
         this.status = BookingStatus.CANCELLED;
     }
-
-    public void generateInvoice() {
-        // Implementation to generate an invoice for the booking
-    }
-
-    public void processPayment() {
-        // Implementation for payment processing
-    }
 }

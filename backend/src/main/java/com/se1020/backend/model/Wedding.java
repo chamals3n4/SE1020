@@ -121,10 +121,6 @@ public class Wedding {
         this.budget = amount;
     }
     
-    public void generateTimeline() {
-        // Implementation to generate a timeline for the wedding
-    }
-    
     /**
      * Mark this Wedding object as a request object.
      * This is useful when using the same class for both entity and request purposes.

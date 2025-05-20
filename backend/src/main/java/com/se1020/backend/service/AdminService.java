@@ -1,5 +1,6 @@
 package com.se1020.backend.service;
 
+import com.se1020.backend.model.Admin;
 import com.se1020.backend.model.User;
 import com.se1020.backend.model.Vendor;
 import com.se1020.backend.model.Couple;
@@ -31,14 +32,36 @@ public class AdminService {
     @Autowired
     private CoupleRepository coupleRepository;
 
-    public User login(String email, String password) throws IOException {
-        User admin = adminRepository.findByEmail(email);
+    public Admin login(String email, String password) throws IOException {
+        Admin admin = adminRepository.findByEmail(email);
         if (admin != null && admin.getPassword().equals(password)) {
             return admin;
         }
         return null;
     }
 
+    public List<Admin> getAllAdmins() throws IOException {
+        return adminRepository.findAll();
+    }
+
+    public Admin getAdminById(String adminId) throws IOException {
+        return adminRepository.findById(adminId);
+    }
+
+    public void createAdmin(Admin admin) throws IOException {
+        admin.setRole(UserRole.ADMIN);
+        adminRepository.save(admin);
+    }
+
+    public void updateAdmin(Admin admin) throws IOException {
+        adminRepository.update(admin);
+    }
+
+    public void deleteAdmin(String adminId) throws IOException {
+        adminRepository.delete(adminId);
+    }
+
+    // User management methods
     public List<User> getAllUsers() throws IOException {
         return userRepository.findAll();
     }
@@ -47,6 +70,7 @@ public class AdminService {
         userRepository.delete(userId);
     }
 
+    // Vendor management methods
     public List<Vendor> getAllVendors() throws IOException {
         return vendorRepository.findAll();
     }
@@ -75,6 +99,7 @@ public class AdminService {
         vendorRepository.delete(vendorId);
     }
 
+    // Couple management methods
     public List<Couple> getAllCouples() throws IOException {
         return coupleRepository.findAll();
     }
@@ -87,14 +112,17 @@ public class AdminService {
         coupleRepository.delete(coupleId);
     }
 
+    // Statistics
     public Map<String, Object> getStats() throws IOException {
         Map<String, Object> stats = new HashMap<>();
 
         List<User> allUsers = userRepository.findAll();
         List<Vendor> allVendors = vendorRepository.findAll();
+        List<Admin> allAdmins = adminRepository.findAll();
 
         stats.put("totalUsers", allUsers.size());
         stats.put("totalVendors", allVendors.size());
+        stats.put("totalAdmins", allAdmins.size());
         stats.put("totalCouples", allUsers.stream()
                 .filter(user -> user.getRole() == UserRole.COUPLE)
                 .count());

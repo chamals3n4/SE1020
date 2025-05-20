@@ -1,6 +1,6 @@
 # Wedding Planning System - Spring Boot API
 
-This project is a Spring Boot RESTful API for a wedding planning system. The system allows users (couples, vendors, and admins) to manage weddings, services, bookings, and tasks.
+This is a Spring Boot RESTful API for a wedding planning system. The system allows users (couples, vendors, and admins) to manage weddings, services, bookings, and tasks.
 
 ## Project Structure
 
@@ -13,26 +13,32 @@ The project follows a standard Spring Boot architecture with the following layer
 
 ## Features
 
+
 ### User Management
 - User registration and authentication
 - Different user roles: Couple, Vendor, Admin
+- User profile management
 
 ### Couple Features
 - Create and manage wedding details
 - Browse vendors
 - Book services
 - Track wedding planning tasks
+- Submit reviews for vendors
 
 ### Vendor Features
 - Manage service offerings
 - Update availability
 - Respond to booking requests
 - Submit portfolio
+- View and respond to reviews
 
 ### Admin Features
-- Manage users
-- Approve vendors
-- Resolve disputes
+- Manage users (couples, vendors, admins)
+- Approve/reject vendors
+- View system statistics
+- Manage disputes
+- Monitor system activity
 
 ### Data Persistence
 - All data is stored in JSON files in `src/main/resources/data/`
@@ -59,14 +65,10 @@ The project follows a standard Spring Boot architecture with the following layer
 - `PUT /api/vendor/{id}` - Update a vendor
 - `DELETE /api/vendor/{id}` - Delete a vendor
 
-### Vendor List (With Linked List Implementation)
-- `GET /api/vendor-list` - Get all vendors using linked list implementation
-- `GET /api/vendor-list/sorted` - Get all vendors sorted by rating using merge sort
-
 ### Wedding Endpoints
 - `GET /api/wedding` - Get all weddings
 - `GET /api/wedding/{id}` - Get a wedding by ID
-- `POST /api/wedding` - Create a new wedding
+- `POST /api/wedding/profile` - Create a new wedding with tasks (consolidated API)
 - `PUT /api/wedding/{id}` - Update a wedding
 - `DELETE /api/wedding/{id}` - Delete a wedding
 
@@ -79,30 +81,26 @@ The project follows a standard Spring Boot architecture with the following layer
 - `PUT /api/booking/{id}/cancel` - Cancel a booking
 - `DELETE /api/booking/{id}` - Delete a booking
 
-### Service Endpoints
-- `GET /api/service` - Get all services
-- `GET /api/service/{id}` - Get a service by ID
-- `POST /api/service` - Create a new service
-- `PUT /api/service/{id}` - Update a service
-- `DELETE /api/service/{id}` - Delete a service
-
+<!-- TODO (Hamdi): Add API Endpoints for the Task component -->
 ### Task Endpoints
-- `GET /api/task` - Get all tasks
-- `GET /api/task/pending` - Get all pending tasks
-- `GET /api/task/{id}` - Get a task by ID
-- `POST /api/task` - Create a new task
-- `PUT /api/task/{id}` - Update a task
-- `PUT /api/task/{id}/complete` - Mark a task as completed
-- `DELETE /api/task/{id}` - Delete a task
 
+### Review Endpoints
+- `GET /api/review` - Get all reviews
+- `GET /api/review/{id}` - Get a review by ID
+- `GET /api/review/vendor/{vendorId}` - Get reviews by vendor ID
+- `GET /api/review/couple/{coupleId}` - Get reviews by couple ID
+- `POST /api/review` - Create a new review
+- `PUT /api/review/{id}` - Update a review
+- `DELETE /api/review/{id}` - Delete a review
+
+
+<!-- TODO (Kavindu): Add API Endpoints for the Admin component -->
 ### Admin Endpoints
-- `GET /api/admin/users` - Get all users (admin only)
-- `PUT /api/admin/vendor/{id}/approve` - Approve a vendor
-- `POST /api/admin/dispute/{userId}/resolve` - Resolve a dispute
+
 
 ## Data Model
 
-The system implements the following key entities as shown in the UML diagram:
+The system implements the following key entities:
 
 - **User**: Base class for all users
 - **Couple**: Extends User, represents a couple planning a wedding
@@ -110,14 +108,8 @@ The system implements the following key entities as shown in the UML diagram:
 - **Admin**: Extends User, represents an admin user
 - **Wedding**: Represents a wedding event
 - **Booking**: Represents a service booking
-- **Service**: Base class for all services
-- **Photography**: Extends Service, represents photography services
-- **Catering**: Extends Service, represents catering services
 - **Task**: Represents a wedding planning task
-- **TaskList**: Manages a collection of tasks
-- **VendorNode**: Node for vendor linked list
-- **VendorLinkedList**: Custom linked list implementation for vendors
-- **VendorSorter**: Provides merge sort for the vendor linked list
+- **Review**: Represents a review submitted by a couple for a vendor
 
 ## Running the Project
 
@@ -131,4 +123,7 @@ The system implements the following key entities as shown in the UML diagram:
 
 - The data files are automatically created in `src/main/resources/data/` if they don't exist
 - The system demonstrates various OOP concepts like inheritance, polymorphism, and encapsulation
-- The VendorLinkedList and VendorSorter showcase custom data structures and algorithms
+- Cross-origin requests are enabled for development (localhost:3000 and localhost:5173)
+- The system uses JSON files for data persistence
+- Error handling is implemented throughout the API
+- The API follows RESTful principles

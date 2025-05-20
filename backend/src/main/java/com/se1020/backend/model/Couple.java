@@ -8,6 +8,11 @@ public class Couple extends User {
     private String partnerId;
     private User partner;
 
+    @Override
+    public String getUserType() {
+        return "COUPLE";
+    }
+
     public double getBudget() {
         return budget;
     }
@@ -39,8 +44,4 @@ public class Couple extends User {
     public void setPartner(User partner) {
         this.partner = partner;
     }
-
-    public void planWedding() {}
-    public void requestBooking() {}
-    public void reviewVendor() {}
 }
