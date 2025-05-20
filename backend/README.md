@@ -84,7 +84,7 @@ The project follows a standard Spring Boot architecture with the following layer
 <!-- TODO (Kavindu): Add API Endpoints for the Task component -->
 ### Task Endpoints
 
-### Review Endpoints
+### Review Endpoints Addded
 - `GET /api/review` - Get all reviews
 - `GET /api/review/{id}` - Get a review by ID
 - `GET /api/review/vendor/{vendorId}` - Get reviews by vendor ID
