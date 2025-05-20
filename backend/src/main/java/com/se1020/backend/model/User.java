@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.se1020.backend.enums.UserRole;
 
-public class User {
+public abstract class User {
     private String id;
     private String email;
     private String password;
@@ -15,6 +15,9 @@ public class User {
     public User() {
         // Default constructor for Jackson
     }
+
+    // Abstract method that all user types must implement
+    public abstract String getUserType();
 
     public String getId() {
         return id;

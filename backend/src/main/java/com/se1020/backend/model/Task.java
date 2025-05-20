@@ -76,8 +76,4 @@ public class Task {
     public void markCompleted() {
         this.isCompleted = true;
     }
-    
-    public void updateTask() {
-        // Implementation for updating task details
-    }
 }
