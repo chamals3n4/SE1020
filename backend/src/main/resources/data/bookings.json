@@ -1,10 +1,10 @@
 [
   {
-    "bookingId": "booking-1747573349477",
-    "coupleId": "couple-1747554999475",
-    "vendorId": "vendor-1747555057660",
-    "weddingId": "wedding-1747554999475",
-    "date": 1747526400000,
+    "bookingId": "booking-1747843868042",
+    "coupleId": "couple-1747842538545",
+    "vendorId": "vendor-1747843539541",
+    "weddingId": "wedding-1747842538545",
+    "date": 1747785600000,
     "status": "CONFIRMED",
     "totalCost": 1000.0,
     "paymentStatus": null,

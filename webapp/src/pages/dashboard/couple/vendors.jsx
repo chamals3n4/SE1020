@@ -49,7 +49,7 @@ import {
   CarouselNext,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { vendorService, bookingService, reviewService } from "@/services/api";
+import { vendorService, bookingService, reviewService, coupleService } from "@/services/api";
 
 function FindVendors() {
   const navigate = useNavigate();
@@ -79,9 +79,28 @@ function FindVendors() {
             let reviewCount = 0;
             let reviews = [];
             try {
-              reviews = (await reviewService.getReviewsByVendorId(vendor.id)) || [];
-              vendor.reviews = reviews;
+              const reviewsResponse = await reviewService.getReviewsByVendorId(vendor.id);
+              reviews = reviewsResponse.data || [];
               if (reviews.length > 0) {
+                // Fetch couple details for each review
+                const reviewsWithCoupleDetails = await Promise.all(
+                  reviews.map(async (review) => {
+                    try {
+                      const coupleResponse = await coupleService.getCoupleById(review.coupleId);
+                      return {
+                        ...review,
+                        coupleName: coupleResponse.data?.name || "Anonymous"
+                      };
+                    } catch (error) {
+                      console.error(`Failed to fetch couple details for review ${review.reviewId}:`, error);
+                      return {
+                        ...review,
+                        coupleName: "Anonymous"
+                      };
+                    }
+                  })
+                );
+                reviews = reviewsWithCoupleDetails;
                 const totalRating = reviews.reduce(
                   (sum, review) => sum + review.rating,
                   0
@@ -91,6 +110,7 @@ function FindVendors() {
               }
             } catch (error) {
               console.error(`Failed to fetch reviews for vendor ${vendor.id}:`, error);
+              reviews = [];
             }
 
             return {
@@ -409,7 +429,7 @@ function FindVendors() {
                           >
                             <div className="flex justify-between items-center">
                               <span className="font-medium">
-                                {review.coupleName || "Anonymous"}
+                                {review.coupleName}
                               </span>
                               <div className="flex items-center text-yellow-500">
                                 <Star className="w-4 h-4 mr-1" />
@@ -418,9 +438,7 @@ function FindVendors() {
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">
                               {review.reviewDate
-                                ? new Date(
-                                    review.reviewDate
-                                  ).toLocaleDateString()
+                                ? new Date(review.reviewDate).toLocaleDateString()
                                 : ""}
                             </p>
                             <p className="text-sm leading-relaxed mt-2 line-clamp-3">

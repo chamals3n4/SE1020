@@ -7,21 +7,56 @@ import {
   Calendar,
   Users,
   Heart,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { taskService, bookingService, vendorService } from "@/services/api";
-import { format, isAfter, isBefore, isToday } from "date-fns";
+import {
+  taskService,
+  bookingService,
+  vendorService,
+  weddingService,
+} from "@/services/api";
+import { format, isAfter, isBefore, isToday, differenceInDays } from "date-fns";
 
 function CoupleOverview() {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [vendorBookings, setVendorBookings] = useState([]);
   const [isBookingsLoading, setIsBookingsLoading] = useState(true);
+  const [weddingData, setWeddingData] = useState(null);
+  const [isWeddingLoading, setIsWeddingLoading] = useState(true);
 
   // Get current user information from localStorage
   const userStr = localStorage.getItem("currentUser");
   const user = userStr ? JSON.parse(userStr) : {};
   const weddingId = user.weddingId;
+
+  // Fetch wedding data
+  useEffect(() => {
+    const fetchWeddingData = async () => {
+      if (!weddingId) {
+        console.log("No wedding ID found, skipping wedding data fetch");
+        setWeddingData(null);
+        setIsWeddingLoading(false);
+        return;
+      }
+
+      try {
+        const response = await weddingService.getWeddingById(weddingId);
+        if (response.data) {
+          setWeddingData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching wedding data:", error);
+      } finally {
+        setIsWeddingLoading(false);
+      }
+    };
+
+    fetchWeddingData();
+  }, [weddingId]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -124,95 +159,89 @@ function CoupleOverview() {
   }, [user]);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border shadow-sm">
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Wedding Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Track your wedding planning progress and upcoming tasks
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border border-violet-100 bg-gradient-to-br from-violet-50 to-violet-100/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-violet-900">
               Total Budget
             </CardTitle>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-violet-600">
               <ArrowUp className="h-3 w-3 mr-1" />
               +12.5%
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$25,000.00</div>
+            <div className="text-2xl font-bold text-violet-900">
+              {weddingData?.budget?.toLocaleString() || "0.00"} LKR
+            </div>
             <div className="flex items-center mt-1">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-xs text-muted-foreground">
+              <TrendingUp className="h-4 w-4 text-violet-500 mr-1" />
+              <span className="text-xs text-violet-600">
                 On track with planning
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border shadow-sm">
+        <Card className="border border-emerald-100 bg-gradient-to-br from-emerald-50 to-emerald-100/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Guest Count
-            </CardTitle>
-            <div className="flex items-center text-xs text-red-600">
-              <ArrowDown className="h-3 w-3 mr-1" />
-              -20%
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">120</div>
-            <div className="flex items-center mt-1">
-              <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
-              <span className="text-xs text-muted-foreground">
-                RSVPs need attention
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-emerald-900">
               Tasks Completed
             </CardTitle>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-emerald-600">
               <ArrowUp className="h-3 w-3 mr-1" />
               +12.5%
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24/36</div>
+            <div className="text-2xl font-bold text-emerald-900">
+              {tasks.filter((task) => task.isCompleted).length}/{tasks.length}
+            </div>
             <div className="flex items-center mt-1">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-xs text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500 mr-1" />
+              <span className="text-xs text-emerald-600">
                 Good progress
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border shadow-sm">
+        <Card className="border border-blue-100 bg-gradient-to-br from-blue-50 to-blue-100/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-blue-900">
               Days Until Wedding
             </CardTitle>
-            <div className="flex items-center text-xs text-green-600">
+            <div className="flex items-center text-xs text-blue-600">
               <ArrowUp className="h-3 w-3 mr-1" />
               +4.5%
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">124</div>
+            <div className="text-2xl font-bold text-blue-900">
+              {weddingData?.date
+                ? differenceInDays(new Date(weddingData.date), new Date())
+                : "0"}
+            </div>
             <div className="flex items-center mt-1">
-              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-              <span className="text-xs text-muted-foreground">On schedule</span>
+              <Clock className="h-4 w-4 text-blue-500 mr-1" />
+              <span className="text-xs text-blue-600">On schedule</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle>Upcoming Tasks</CardTitle>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border border-slate-200 bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Upcoming Tasks</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -224,21 +253,21 @@ function CoupleOverview() {
                 tasks.map((task) => (
                   <div
                     key={task.taskId}
-                    className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div>
-                      <p className="font-medium">{task.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-sm">{task.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Due: {format(new Date(task.dueDate), "MMM dd, yyyy")}
                       </p>
                     </div>
                     <div
-                      className={`text-sm px-2 py-1 rounded-full ${
+                      className={`text-xs px-2.5 py-1 rounded-full ${
                         isToday(new Date(task.dueDate))
-                          ? "bg-red-100 text-red-800"
+                          ? "bg-rose-100 text-rose-700"
                           : isBefore(new Date(task.dueDate), new Date())
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
                       }`}
                     >
                       {isToday(new Date(task.dueDate))
@@ -250,7 +279,7 @@ function CoupleOverview() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground">
                   No upcoming tasks
                 </div>
               )}
@@ -258,9 +287,9 @@ function CoupleOverview() {
           </CardContent>
         </Card>
 
-        <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle>Vendor Bookings</CardTitle>
+        <Card className="border border-slate-200 bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold">Vendor Bookings</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -272,19 +301,19 @@ function CoupleOverview() {
                 vendorBookings.map((booking, idx) => (
                   <div
                     key={booking.bookingId || idx}
-                    className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0"
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div>
-                      <p className="font-medium">{booking.vendorType}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="font-medium text-sm">{booking.vendorType}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {booking.vendorName}
                       </p>
                     </div>
                     <div
-                      className={`text-sm px-2 py-1 rounded-full ${
+                      className={`text-xs px-2.5 py-1 rounded-full ${
                         booking.status === "CONFIRMED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {booking.status.charAt(0) +
@@ -293,7 +322,7 @@ function CoupleOverview() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground">
                   No vendor bookings yet
                 </div>
               )}

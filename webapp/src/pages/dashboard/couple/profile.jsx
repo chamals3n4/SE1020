@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { format, parse } from "date-fns";
 import { coupleService } from "@/services/api";
+import { Gem, User } from "lucide-react";
 
 function CoupleProfile() {
   const [isLoading, setIsLoading] = useState(true);
@@ -362,13 +363,21 @@ function CoupleProfile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="budget">Wedding Budget ($)</Label>
+                  <Label
+                    htmlFor="budget"
+                    className="text-gray-700 flex items-center"
+                  >
+                    <Gem className="w-4 h-4 mr-2 text-violet-400" /> Wedding
+                    Budget
+                  </Label>
                   <Input
                     id="budget"
                     name="budget"
                     type="number"
                     value={profileData.budget}
                     onChange={handleChange}
+                    required
+                    className="border-gray-300 focus:border-violet-400 focus:ring focus:ring-violet-400/20"
                   />
                 </div>
               </div>

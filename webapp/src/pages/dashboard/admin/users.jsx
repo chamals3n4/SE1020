@@ -270,6 +270,21 @@ export default function AdminUsers() {
                     </div>
                   </div>
                 </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Additional Details</h3>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium">Budget:</span> ${selectedCouple.budget || 0}
+                    </div>
+                    <div>
+                      <span className="font-medium">Wedding Date:</span> {selectedCouple.weddingDate ? formatDate(selectedCouple.weddingDate) : 'Not set'}
+                    </div>
+                    <div>
+                      <span className="font-medium">Guest Count:</span> {selectedCouple.guestCount || 0}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <DialogFooter className="flex justify-end gap-2 mt-6">

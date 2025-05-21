@@ -26,6 +26,7 @@ import CoupleBookings from "./pages/dashboard/couple/bookings";
 import CoupleWedding from "./pages/dashboard/couple/wedding";
 import CoupleTasks from "./pages/dashboard/couple/tasks";
 import VendorDetails from "./pages/dashboard/couple/vendor-details";
+import CoupleReviews from "./pages/dashboard/couple/reviews";
 
 // Admin Dashboard Pages
 import AdminOverview from "./pages/dashboard/admin/overview";
@@ -74,6 +75,7 @@ function App() {
             <Route path="bookings" element={<CoupleBookings />} />
             <Route path="wedding" element={<CoupleWedding />} />
             <Route path="tasks" element={<CoupleTasks />} />
+            <Route path="reviews" element={<CoupleReviews />} />
           </Route>
 
           {/* Admin Dashboard Routes */}
