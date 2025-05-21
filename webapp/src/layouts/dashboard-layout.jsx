@@ -17,6 +17,7 @@ import {
   BarChart,
   Settings,
   PlusCircle,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,13 +33,14 @@ const coupleNavItems = [
   { icon: Calendar, label: "Bookings", path: "/dashboard/couple/bookings" },
   { icon: PlusCircle, label: "Wedding", path: "/dashboard/couple/wedding" },
   { icon: ShoppingBag, label: "Tasks", path: "/dashboard/couple/tasks" },
+  { icon: Star, label: "My Reviews", path: "/dashboard/couple/reviews" },
   { icon: User, label: "Profile", path: "/dashboard/couple/profile" },
 ];
 
 const adminNavItems = [
   { icon: Home, label: "Dashboard", path: "/dashboard/admin/overview" },
   { icon: Users, label: "Users", path: "/dashboard/admin/users" },
-  { icon: ShoppingBag, label: "Vendors", path: "/dashboard/admin/vendors" }
+  { icon: ShoppingBag, label: "Vendors", path: "/dashboard/admin/vendors" },
 ];
 
 function DashboardLayout({ userType }) {
@@ -64,7 +66,7 @@ function DashboardLayout({ userType }) {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen ">
       {/* Mobile sidebar toggle */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button

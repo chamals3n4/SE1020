@@ -129,6 +129,7 @@ function CoupleRegistration() {
           budget: parseFloat(formData.budget) || 0,
           style: formData.style ? formData.style.toUpperCase() : "TRADITIONAL",
           location: "",
+          guestCount: 0,
           tasks: []
         };
 

@@ -1,24 +1,24 @@
 [
   {
-    "id": "vendor-1747555057660",
-    "email": "info@hexa7.labs",
+    "id": "vendor-1747843539541",
+    "email": "helloworld@gmail.com",
     "password": "0000",
-    "name": "Hexa7 Labs",
+    "name": "Chalk Technologies",
     "phone": "0712193355",
-    "role": "VENDOR",
     "vendorType": "CATERING",
     "rating": 4.0,
     "availability": [],
     "status": "APPROVED",
     "imageUrls": [
-      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555106322_FB_IMG_1720100188250.jpg",
-      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555106907_20240530_173011.jpg",
-      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747555057660/1747555110307_original-succession-season-3-music-by-nicholas-britell-end-credits-raid-nicholas-britell-229-al-141.jpeg"
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843618064_SriLankaWildlife2025Calendar__4_.png",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843620118_WhatsApp_Image_2025-04-06_at_23.21.49_0d2b2568.jpg",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843620589_wp2022171-silicon-valley-wallpapers__1_.jpg"
     ],
-    "basePrice": 1500.0,
+    "basePrice": 60000.0,
     "address": "Bamunapotha",
     "socialMediaLinks": {},
     "approved": true,
+    "userType": "VENDOR",
     "rejected": false
   }
 ]

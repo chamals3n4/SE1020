@@ -1,5 +1,8 @@
 package com.se1020.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Admin extends User {
     
     public Admin() {
@@ -10,4 +13,4 @@ public class Admin extends User {
     public String getUserType() {
         return "ADMIN";
     }
-} 
+}

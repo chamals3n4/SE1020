@@ -1,5 +1,7 @@
 package com.se1020.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.se1020.backend.enums.SocialMediaPlatform;
 import com.se1020.backend.enums.VendorType;
 import java.util.ArrayList;
@@ -7,6 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "role",
+  defaultImpl = Vendor.class
+)
 public class Vendor extends User {
     private VendorType vendorType;
     private String businessName;
