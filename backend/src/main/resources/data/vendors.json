@@ -5,7 +5,9 @@
     "password": "0000",
     "name": "Chalk Technologies",
     "phone": "0712193355",
+    "role": null,
     "vendorType": "CATERING",
+    "businessName": null,
     "rating": 4.0,
     "availability": [],
     "status": "APPROVED",
@@ -16,9 +18,35 @@
     ],
     "basePrice": 60000.0,
     "address": "Bamunapotha",
+    "serviceRadius": null,
     "socialMediaLinks": {},
     "approved": true,
-    "userType": "VENDOR",
-    "rejected": false
+    "rejected": false,
+    "userType": "VENDOR"
+  },
+  {
+    "id": "vendor-1747843539555",
+    "email": "soarlabs@gmail.com",
+    "password": "0000",
+    "name": "Soar Labs",
+    "phone": "0712193317",
+    "role": null,
+    "vendorType": "CATERING",
+    "businessName": null,
+    "rating": 4.0,
+    "availability": [],
+    "status": "APPROVED",
+    "imageUrls": [
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843618064_SriLankaWildlife2025Calendar__4_.png",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843620118_WhatsApp_Image_2025-04-06_at_23.21.49_0d2b2568.jpg",
+      "https://pjaoxtmplhmfqurobhwh.supabase.co/storage/v1/object/public/images/vendors/vendor-1747843539541/1747843620589_wp2022171-silicon-valley-wallpapers__1_.jpg"
+    ],
+    "basePrice": 100000.0,
+    "address": "Hatch",
+    "serviceRadius": null,
+    "socialMediaLinks": {},
+    "approved": true,
+    "rejected": false,
+    "userType": "VENDOR"
   }
 ]

@@ -1,6 +1,11 @@
 package com.se1020.backend.util.dsa;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.se1020.backend.model.Vendor;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 // Linked list implementation for managing vendors.
 
@@ -66,5 +71,40 @@ public class VendorLinkedList {
             current = current.getNext();
         }
         return null;
+    }
+
+    // New method to convert to JSON string
+    public String toJson() throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        List<Vendor> vendorList = new ArrayList<>();
+        VendorNode current = head;
+        while (current != null) {
+            vendorList.add(current.getVendor());
+            current = current.getNext();
+        }
+        return mapper.writeValueAsString(vendorList);
+    }
+
+    // New method to create from JSON string
+    public static VendorLinkedList fromJson(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        List<Vendor> vendorList = mapper.readValue(json, new TypeReference<List<Vendor>>() {});
+        VendorLinkedList list = new VendorLinkedList();
+        for (Vendor vendor : vendorList) {
+            list.addVendor(vendor);
+        }
+        return list;
+    }
+
+    // New method to get all vendors as array
+    public Vendor[] toArray() {
+        Vendor[] vendors = new Vendor[size];
+        VendorNode current = head;
+        int index = 0;
+        while (current != null) {
+            vendors[index++] = current.getVendor();
+            current = current.getNext();
+        }
+        return vendors;
     }
 }

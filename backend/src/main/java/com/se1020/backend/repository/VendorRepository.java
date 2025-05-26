@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.se1020.backend.model.Vendor;
+import com.se1020.backend.util.dsa.VendorLinkedList;
+import com.se1020.backend.util.dsa.VendorNode;
 import org.springframework.stereotype.Repository;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Repository
 public class VendorRepository {
@@ -20,83 +22,49 @@ public class VendorRepository {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private final File file = new File(FILE_PATH);
 
-    public List<Vendor> findAll() throws IOException {
+    public VendorLinkedList findAll() throws IOException {
         if (!file.exists()) {
             file.getParentFile().mkdirs();
             file.createNewFile();
-            objectMapper.writeValue(file, new ArrayList<Vendor>());
-            return new ArrayList<>();
+            VendorLinkedList emptyList = new VendorLinkedList();
+            Files.write(Paths.get(FILE_PATH), emptyList.toJson().getBytes());
+            return emptyList;
         }
         
         if (file.length() == 0) {
-            objectMapper.writeValue(file, new ArrayList<Vendor>());
-            return new ArrayList<>();
+            VendorLinkedList emptyList = new VendorLinkedList();
+            Files.write(Paths.get(FILE_PATH), emptyList.toJson().getBytes());
+            return emptyList;
         }
         
-        return objectMapper.readValue(file, new TypeReference<List<Vendor>>() {});
+        String json = new String(Files.readAllBytes(Paths.get(FILE_PATH)));
+        return VendorLinkedList.fromJson(json);
     }
 
     public Vendor findById(String id) throws IOException {
-        List<Vendor> vendors = findAll();
-        return vendors.stream()
-                .filter(vendor -> vendor.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return findAll().getVendorById(id);
     }
 
     public void save(Vendor vendor) throws IOException {
-        List<Vendor> vendors = findAll();
-        vendors.add(vendor);
-        objectMapper.writeValue(file, vendors);
+        VendorLinkedList vendors = findAll();
+        vendors.addVendor(vendor);
+        saveAll(vendors);
     }
 
     public void update(Vendor vendor) throws IOException {
-        List<Vendor> vendors = findAll();
-        // Find existing vendor
-        Vendor existingVendor = vendors.stream()
-                .filter(v -> v.getId().equals(vendor.getId()))
-                .findFirst()
-                .orElse(null);
-
-        if (existingVendor != null) {
-            // Remove old vendor
-            vendors.removeIf(v -> v.getId().equals(vendor.getId()));
-            
-            // Merge new data with existing data
-            // Only update non-null fields from the new vendor object
-            if (vendor.getEmail() != null) existingVendor.setEmail(vendor.getEmail());
-            if (vendor.getName() != null) existingVendor.setName(vendor.getName());
-            if (vendor.getPhone() != null) existingVendor.setPhone(vendor.getPhone());
-            if (vendor.getRole() != null) existingVendor.setRole(vendor.getRole());
-            if (vendor.getVendorType() != null) existingVendor.setVendorType(vendor.getVendorType());
-            if (vendor.getBusinessName() != null) existingVendor.setBusinessName(vendor.getBusinessName());
-            if (vendor.getRating() != 0.0) existingVendor.setRating(vendor.getRating());
-            if (vendor.getAvailability() != null) existingVendor.setAvailability(vendor.getAvailability());
-            if (vendor.getAddress() != null) existingVendor.setAddress(vendor.getAddress());
-            if (vendor.getImageUrls() != null) existingVendor.setImageUrls(vendor.getImageUrls());
-            if (vendor.getBasePrice() > 0) existingVendor.setBasePrice(vendor.getBasePrice());
-            if (vendor.getSocialMediaLinks() != null) existingVendor.setSocialMediaLinks(vendor.getSocialMediaLinks());
-            if (vendor.getStatus() != null) existingVendor.setStatus(vendor.getStatus());
-            
-            // Add updated vendor back to list
-            vendors.add(existingVendor);
-            
-            // Save the updated list
-            saveAll(vendors);
-        } else {
-            // If vendor doesn't exist, add as new
-            vendors.add(vendor);
-            saveAll(vendors);
-        }
+        VendorLinkedList vendors = findAll();
+        vendors.removeVendor(vendor.getId());
+        vendors.addVendor(vendor);
+        saveAll(vendors);
     }
 
     public void delete(String vendorId) throws IOException {
-        List<Vendor> vendors = findAll();
-        vendors.removeIf(v -> v.getId().equals(vendorId));
-        objectMapper.writeValue(file, vendors);
+        VendorLinkedList vendors = findAll();
+        vendors.removeVendor(vendorId);
+        saveAll(vendors);
     }
 
-    private void saveAll(List<Vendor> vendors) throws IOException {
-        objectMapper.writeValue(file, vendors);
+    private void saveAll(VendorLinkedList vendors) throws IOException {
+        Files.write(Paths.get(FILE_PATH), vendors.toJson().getBytes());
     }
 }
